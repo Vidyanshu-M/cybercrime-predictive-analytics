@@ -384,3 +384,102 @@ def build_feature_pipeline(
         )
 
     return ColumnTransformer(transformers=transformers, remainder="drop")
+
+
+# 4.16 — Future 3-Hour Target Construction
+def create_future_target(
+    df: pd.DataFrame,
+    transactions: pd.DataFrame,
+    threshold: int = 2
+) -> pd.DataFrame:
+    """
+    Creates the forecasting target.
+
+    target = 1 if an ATM experiences at least
+             `threshold` fraud-related withdrawals
+             during the next 3 hours.
+
+    IMPORTANT:
+    Future transactions are used ONLY to create
+    the target and must never be used as input features.
+    """
+    fraud_withdrawals = transactions[
+        (transactions["risk_label"] == 1) &
+        (transactions["transaction_type"] == "WITHDRAWAL")
+    ].copy()
+
+    # Optimized vectorization for scalable ATM x time evaluation
+    # (Matches exact condition: observation_time < timestamp <= observation_time + 3h)
+    h0 = fraud_withdrawals["timestamp"].dt.floor("h")
+    is_exact = (fraud_withdrawals["timestamp"] == h0)
+
+    records = []
+    for off in [0, 1, 2]:
+        valid = ~is_exact
+        if valid.any():
+            records.append(pd.DataFrame({
+                "atm_id": fraud_withdrawals.loc[valid, "atm_id"],
+                "observation_time": h0.loc[valid] - pd.Timedelta(hours=off)
+            }))
+
+    for off in [1, 2, 3]:
+        valid = is_exact
+        if valid.any():
+            records.append(pd.DataFrame({
+                "atm_id": fraud_withdrawals.loc[valid, "atm_id"],
+                "observation_time": h0.loc[valid] - pd.Timedelta(hours=off)
+            }))
+
+    if records:
+        all_events = pd.concat(records, ignore_index=True)
+        counts = (
+            all_events.groupby(["atm_id", "observation_time"])
+            .size()
+            .rename("future_fraud_withdrawals_3h")
+            .reset_index()
+        )
+        df_out = df.merge(counts, on=["atm_id", "observation_time"], how="left")
+        df_out["future_fraud_withdrawals_3h"] = (
+            df_out["future_fraud_withdrawals_3h"].fillna(0).astype(int)
+        )
+    else:
+        df_out = df.copy()
+        df_out["future_fraud_withdrawals_3h"] = 0
+
+    df_out["target"] = (
+        df_out["future_fraud_withdrawals_3h"] >= threshold
+    ).astype(int)
+
+    return df_out
+
+
+# 4.17 — Target Distribution Test
+def test_target_distribution(
+    atms: pd.DataFrame,
+    transactions: pd.DataFrame
+) -> pd.DataFrame:
+    """Test target distribution and class balance across the ATM x Time grid."""
+    print("Generating hourly observation timestamps...")
+    observation_times = create_observation_times(transactions)
+
+    print("Constructing ATM x Observation Time grid...")
+    grid = create_atm_time_grid(atms, observation_times)
+
+    print("Evaluating future 3-hour fraud-withdrawal target (threshold >= 2)...")
+    grid = create_future_target(grid, transactions, threshold=2)
+
+    print("\n===== TARGET DISTRIBUTION =====")
+    print(grid["target"].value_counts())
+
+    print("\n===== TARGET PERCENTAGES =====")
+    print(grid["target"].value_counts(normalize=True).mul(100).round(2))
+
+    print("\n===== FUTURE FRAUD COUNT =====")
+    print(grid["future_fraud_withdrawals_3h"].describe())
+
+    return grid
+
+
+if __name__ == "__main__":
+    atms, complaints, transactions = load_processed_data()
+    grid = test_target_distribution(atms, transactions)
