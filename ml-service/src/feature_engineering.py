@@ -402,6 +402,9 @@ def build_feature_dataset() -> pd.DataFrame:
     print("Creating future target (threshold >= 2)...")
     df = create_future_target(df, transactions, threshold=2)
 
+    # Explicitly sort chronologically before returning
+    df = df.sort_values("observation_time").reset_index(drop=True)
+
     return df
 
 
