@@ -1,0 +1,11 @@
+bank_id,bank_name,hq,fraud_helpline
+BANK01,State Bank of India,Mumbai,1800-11-2211
+BANK02,HDFC Bank,Mumbai,1800-202-6161
+BANK03,ICICI Bank,Mumbai,1800-1080
+BANK04,Punjab National Bank,New Delhi,1800-180-2222
+BANK05,Axis Bank,Mumbai,1800-419-5959
+BANK06,Bank of Baroda,Vadodara,1800-258-4455
+BANK07,Kotak Mahindra Bank,Mumbai,1800-209-0000
+BANK08,Canara Bank,Bengaluru,1800-425-0018
+BANK09,Union Bank of India,Mumbai,1800-22-2244
+BANK10,IndusInd Bank,Pune,1860-267-7777
