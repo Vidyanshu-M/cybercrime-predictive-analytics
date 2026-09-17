@@ -1,0 +1,87 @@
+{
+  "summary": [
+    {
+      "Dataset": "Banks",
+      "Rows": 10,
+      "Columns": 4,
+      "Missing Values": 0,
+      "Duplicate Rows": 0
+    },
+    {
+      "Dataset": "Districts",
+      "Rows": 20,
+      "Columns": 7,
+      "Missing Values": 0,
+      "Duplicate Rows": 0
+    },
+    {
+      "Dataset": "ATMs",
+      "Rows": 500,
+      "Columns": 10,
+      "Missing Values": 0,
+      "Duplicate Rows": 0
+    },
+    {
+      "Dataset": "Complaints",
+      "Rows": 10000,
+      "Columns": 11,
+      "Missing Values": 0,
+      "Duplicate Rows": 0
+    },
+    {
+      "Dataset": "Transactions",
+      "Rows": 30000,
+      "Columns": 11,
+      "Missing Values": 27880,
+      "Duplicate Rows": 0
+    }
+  ],
+  "findings": [
+    {
+      "Area": "Dataset Size",
+      "Finding": "10 Banks, 20 Districts, 500 ATMs, 10,000 Complaints, 30,000 Transactions verified",
+      "Status": "PASS"
+    },
+    {
+      "Area": "Missing Values",
+      "Finding": "0 missing values across all required keys; complaint_id populated on 2,120 cluster txns",
+      "Status": "PASS"
+    },
+    {
+      "Area": "Duplicates",
+      "Finding": "Zero duplicate records and 100% unique primary keys across all 5 tables",
+      "Status": "PASS"
+    },
+    {
+      "Area": "Temporal Patterns",
+      "Finding": "Hourly activity shows normal daytime peak (14:00) vs off-hour fraud spikes (22:00-04:00)",
+      "Status": "PASS"
+    },
+    {
+      "Area": "Spatial Patterns",
+      "Finding": "Valid UP coordinates [25.1-29.9N, 77.3-83.4E]; ATMs cluster by commercial/transit density",
+      "Status": "PASS"
+    },
+    {
+      "Area": "Transaction Activity",
+      "Finding": "83.2% withdrawals (mean INR 3,685); normal range INR 500-10,000 vs fraud INR 10,000-25,000",
+      "Status": "PASS"
+    },
+    {
+      "Area": "Fraud Patterns",
+      "Finding": "350 spatial/temporal fraud clusters with short time gaps (4-12m) linking complaints to withdrawals",
+      "Status": "PASS"
+    }
+  ],
+  "atm_lat_range": [
+    25.140772,
+    29.978526
+  ],
+  "atm_lon_range": [
+    77.310396,
+    83.401494
+  ],
+  "withdrawal_count": 24950,
+  "fraud_txn_count": 2120,
+  "fraud_txn_pct": 7.066666666666667
+}
