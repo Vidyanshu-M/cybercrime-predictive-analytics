@@ -1,14 +1,13 @@
 """Phase 4: Feature Engineering Pipeline.
 
-Converts cleaned event data from Phase 3 into an ATM x Observation Time feature matrix.
-Strictly adheres to the No-Leakage Rule:
-At observation time T, only information occurring at or before T is used for feature construction.
-The future 3-hour window (T to T+3h) is reserved exclusively for the prediction target.
+Converts cleaned transaction-anchored event data from Phase 3 into an
+ATM x Observation Time ML feature matrix for 3-hour elevated fraud prediction.
 
-Feature Groups:
-1. Temporal (hour, day_of_week, is_weekend, complaints/withdrawals in past 1h, 6h, 24h)
-2. Spatial (fraud events and complaints within 1km and 3km, distance from recent fraud, hotspot score)
-3. Financial / Activity (withdrawal count, total amount, average amount, unique accounts, velocity)
+Strictly enforces the Zero-Leakage Boundary:
+- Observation Time T = arrival time of an ATM transaction.
+- Input Features = functions strictly of events with timestamp <= T.
+- Prediction Horizon = (T, T + 3h] used exclusively to compute the target.
+- Target = 1 if future fraud-related withdrawals in (T, T + 3h] >= 2, else 0.
 """
 
 from pathlib import Path
@@ -41,10 +40,10 @@ TEMPORAL_FEATURES: List[str] = [
 ]
 
 SPATIAL_FEATURES: List[str] = [
-    "fraud_events_1km",
-    "fraud_events_3km",
     "complaints_1km",
     "complaints_3km",
+    "fraud_events_1km",
+    "fraud_events_3km",
     "distance_from_recent_fraud",
     "historical_hotspot_score"
 ]
@@ -67,6 +66,14 @@ ALL_MODEL_FEATURES: List[str] = (
     TEMPORAL_FEATURES + SPATIAL_FEATURES + FINANCIAL_ACTIVITY_FEATURES
 )
 
+FORBIDDEN_FEATURES: List[str] = [
+    "risk_label",
+    "complaint_id",
+    "transaction_id",
+    "transaction_reference",
+    "future_fraud_withdrawals_3h"
+]
+
 
 # 4.2 — Load Processed Data
 def load_processed_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -81,30 +88,22 @@ def load_processed_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     return atms, complaints, transactions
 
 
-# 4.3 — Observation Timestamps
-def create_observation_times(transactions: pd.DataFrame) -> pd.DatetimeIndex:
-    """Generate hourly observation timestamps up to max timestamp minus prediction window."""
-    start_time = transactions["timestamp"].min().floor("h")
-    end_time = (
-        transactions["timestamp"].max() - pd.Timedelta(hours=PREDICTION_WINDOW_HOURS)
-    ).floor("h")
-
-    return pd.date_range(start=start_time, end=end_time, freq="1h")
-
-
-# 4.4 — ATM x Time Grid
-def create_atm_time_grid(atms: pd.DataFrame, observation_times: pd.DatetimeIndex) -> pd.DataFrame:
-    """Create Cartesian product grid of ATMs and observation timestamps."""
-    grid = pd.MultiIndex.from_product(
-        [atms["atm_id"], observation_times],
-        names=["atm_id", "observation_time"]
-    ).to_frame(index=False)
-    return grid
+# 4.18.1 — Create Observations & Attach ATM Metadata
+def create_transaction_observations(transactions: pd.DataFrame) -> pd.DataFrame:
+    """Create observation points anchored on transaction timestamps per ATM."""
+    observations = (
+        transactions[["atm_id", "timestamp"]]
+        .drop_duplicates()
+        .rename(columns={"timestamp": "observation_time"})
+        .sort_values(["atm_id", "observation_time"])
+        .reset_index(drop=True)
+    )
+    return observations
 
 
-def attach_atm_information(grid: pd.DataFrame, atms: pd.DataFrame) -> pd.DataFrame:
-    """Attach static ATM metadata (location, type, bank, district) to grid."""
-    atm_columns = [
+def attach_atm_information(observations: pd.DataFrame, atms: pd.DataFrame) -> pd.DataFrame:
+    """Attach static ATM metadata (location, type, bank, district) to observations."""
+    columns = [
         "atm_id",
         "bank_id",
         "district_id",
@@ -113,237 +112,303 @@ def attach_atm_information(grid: pd.DataFrame, atms: pd.DataFrame) -> pd.DataFra
         "atm_type",
         "is_active"
     ]
-    return grid.merge(atms[atm_columns], on="atm_id", how="left")
+    return observations.merge(atms[columns], on="atm_id", how="left")
 
 
-# 4.5 — Temporal Features
-def create_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Extract hour, day of week, and weekend indicator."""
+# 4.18.2 — Temporal Features
+def add_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Extract hour, day of week, and weekend indicator from observation time."""
     df["hour"] = df["observation_time"].dt.hour
     df["day_of_week"] = df["observation_time"].dt.dayofweek
     df["is_weekend"] = (df["day_of_week"] >= 5).astype(int)
     return df
 
 
-# 4.6 — Complaint Activity Features
+# 4.18.3 — Complaint Features (Windows: 1h, 6h, 24h)
 def add_complaint_features(df: pd.DataFrame, complaints: pd.DataFrame) -> pd.DataFrame:
-    """Calculate complaint activity in the past 1h, 6h, and 24h leading up to observation time."""
-    complaints = complaints.copy()
-    complaint_times = complaints[
-        ["complaint_id", "timestamp", "latitude", "longitude"]
-    ].sort_values("timestamp")
+    """Calculate system-wide complaint activity in past 1h, 6h, and 24h prior to observation time."""
+    comp_ts = complaints["timestamp"].sort_values().values
+    obs_ts = df["observation_time"].values
 
-    result = []
-    windows = {
-        "complaints_last_1h": 1,
-        "complaints_last_6h": 6,
-        "complaints_last_24h": 24
-    }
+    for hours in [1, 6, 24]:
+        start_ts = (df["observation_time"] - pd.Timedelta(hours=hours)).values
+        high_idx = np.searchsorted(comp_ts, obs_ts, side="right")
+        low_idx = np.searchsorted(comp_ts, start_ts, side="right")
+        df[f"complaints_last_{hours}h"] = (high_idx - low_idx).astype(int)
 
+    return df
+
+
+# 4.18.4 — Withdrawal Window Features (Windows: 1h, 6h, 24h per ATM)
+def add_withdrawal_window_features(df: pd.DataFrame, withdrawals: pd.DataFrame) -> pd.DataFrame:
+    """Calculate withdrawals at this ATM in past 1h, 6h, and 24h."""
+    atm_withdrawals = {k: v["timestamp"].sort_values().values for k, v in withdrawals.groupby("atm_id")}
+
+    w1, w6, w24 = [], [], []
     for _, row in df.iterrows():
         t = row["observation_time"]
-        features = row.to_dict()
+        ts = atm_withdrawals.get(row["atm_id"])
+        if ts is not None and len(ts) > 0:
+            h1 = np.searchsorted(ts, t - pd.Timedelta(hours=1), side="right")
+            h6 = np.searchsorted(ts, t - pd.Timedelta(hours=6), side="right")
+            h24 = np.searchsorted(ts, t - pd.Timedelta(hours=24), side="right")
+            cur = np.searchsorted(ts, t, side="right")
+            w1.append(cur - h1)
+            w6.append(cur - h6)
+            w24.append(cur - h24)
+        else:
+            w1.append(0)
+            w6.append(0)
+            w24.append(0)
 
-        for name, hours in windows.items():
-            start = t - pd.Timedelta(hours=hours)
-            mask = (complaint_times["timestamp"] > start) & (complaint_times["timestamp"] <= t)
-            features[name] = int(mask.sum())
-
-        result.append(features)
-
-    return pd.DataFrame(result)
-
-
-# 4.7 — Withdrawal Activity Features
-def add_withdrawal_features(df: pd.DataFrame, withdrawals: pd.DataFrame) -> pd.DataFrame:
-    """Calculate withdrawals at this ATM in the past 1h, 6h, and 24h."""
-    withdrawals = withdrawals.sort_values("timestamp")
-
-    result = []
-    for _, row in df.iterrows():
-        t = row["observation_time"]
-        features = row.to_dict()
-
-        for hours in [1, 6, 24]:
-            start = t - pd.Timedelta(hours=hours)
-            mask = (
-                (withdrawals["timestamp"] > start)
-                & (withdrawals["timestamp"] <= t)
-                & (withdrawals["atm_id"] == row["atm_id"])
-            )
-            features[f"withdrawals_last_{hours}h"] = int(mask.sum())
-
-        result.append(features)
-
-    return pd.DataFrame(result)
+    df["withdrawals_last_1h"] = w1
+    df["withdrawals_last_6h"] = w6
+    df["withdrawals_last_24h"] = w24
+    return df
 
 
-# 4.8 — Financial Activity Features
+# 4.18.5 — Financial / Activity Features (6-hour historical window)
 def add_financial_features(df: pd.DataFrame, withdrawals: pd.DataFrame) -> pd.DataFrame:
     """Calculate financial metrics over the past 6 hours for this ATM."""
-    withdrawals = withdrawals.copy()
+    atm_withdrawals = {k: v.sort_values("timestamp") for k, v in withdrawals.groupby("atm_id")}
 
-    result = []
+    w_cnt, w_tot, w_avg, w_uniq, w_vel = [], [], [], [], []
     for _, row in df.iterrows():
         t = row["observation_time"]
-        start = t - pd.Timedelta(hours=6)
+        w_atm = atm_withdrawals.get(row["atm_id"])
+        if w_atm is not None:
+            ts = w_atm["timestamp"].values
+            low_idx = np.searchsorted(ts, t - pd.Timedelta(hours=6), side="right")
+            high_idx = np.searchsorted(ts, t, side="right")
+            recent = w_atm.iloc[low_idx:high_idx]
+            count = len(recent)
+            w_cnt.append(count)
+            if count > 0:
+                w_tot.append(float(recent["amount"].sum()))
+                w_avg.append(float(recent["amount"].mean()))
+                w_uniq.append(int(recent["account_id"].nunique()))
+            else:
+                w_tot.append(0.0)
+                w_avg.append(0.0)
+                w_uniq.append(0)
+            w_vel.append(float(count / 6.0))
+        else:
+            w_cnt.append(0)
+            w_tot.append(0.0)
+            w_avg.append(0.0)
+            w_uniq.append(0)
+            w_vel.append(0.0)
 
-        mask = (
-            (withdrawals["timestamp"] > start)
-            & (withdrawals["timestamp"] <= t)
-            & (withdrawals["atm_id"] == row["atm_id"])
-        )
-        recent = withdrawals.loc[mask]
-
-        features = row.to_dict()
-        features["withdrawal_count"] = len(recent)
-        features["total_withdrawal_amount"] = float(recent["amount"].sum())
-        features["average_withdrawal"] = (
-            float(recent["amount"].mean()) if len(recent) > 0 else 0.0
-        )
-        features["unique_accounts"] = int(recent["account_id"].nunique())
-        features["transaction_velocity"] = float(len(recent) / 6.0)
-
-        result.append(features)
-
-    return pd.DataFrame(result)
+    df["withdrawal_count"] = w_cnt
+    df["total_withdrawal_amount"] = w_tot
+    df["average_withdrawal"] = w_avg
+    df["unique_accounts"] = w_uniq
+    df["transaction_velocity"] = w_vel
+    return df
 
 
-# 4.9 — Haversine Distance
+# Haversine Distance (vectorized)
 def haversine_distance(
     lat1: Any, lon1: Any, lat2: Any, lon2: Any
 ) -> np.ndarray:
-    """Calculate great circle distance between two points or sets of points on Earth in km."""
-    lat1 = np.radians(lat1)
-    lon1 = np.radians(lon1)
-    lat2 = np.radians(lat2)
-    lon2 = np.radians(lon2)
-
+    """Calculate great circle distance between two coordinates or sets of coordinates in km."""
+    lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1
     dlon = lon2 - lon1
-
     a = (
         np.sin(dlat / 2.0) ** 2
         + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
     )
-
     return 2.0 * EARTH_RADIUS_KM * np.arcsin(np.sqrt(a))
 
 
-# 4.10 — Spatial Complaint Features
+# 4.18.6 — Spatial Complaint Features (1km and 3km)
 def add_spatial_complaint_features(df: pd.DataFrame, complaints: pd.DataFrame) -> pd.DataFrame:
     """Count complaints within 1km and 3km occurring on or before observation time."""
-    complaints = complaints.copy()
+    comp_lat = complaints["latitude"].values
+    comp_lon = complaints["longitude"].values
+    comp_times = complaints["timestamp"].values
 
-    result = []
+    c1km, c3km = [], []
     for _, row in df.iterrows():
         t = row["observation_time"]
-        historical = complaints[complaints["timestamp"] <= t]
+        mask = comp_times <= t
+        if not mask.any():
+            c1km.append(0)
+            c3km.append(0)
+        else:
+            d = haversine_distance(row["latitude"], row["longitude"], comp_lat[mask], comp_lon[mask])
+            c1km.append(int((d <= 1.0).sum()))
+            c3km.append(int((d <= 3.0).sum()))
 
-        features = row.to_dict()
-        if historical.empty:
-            features["complaints_1km"] = 0
-            features["complaints_3km"] = 0
-            result.append(features)
-            continue
-
-        distances = haversine_distance(
-            row["latitude"],
-            row["longitude"],
-            historical["latitude"].values,
-            historical["longitude"].values
-        )
-
-        features["complaints_1km"] = int((distances <= 1.0).sum())
-        features["complaints_3km"] = int((distances <= 3.0).sum())
-        result.append(features)
-
-    return pd.DataFrame(result)
+    df["complaints_1km"] = c1km
+    df["complaints_3km"] = c3km
+    return df
 
 
-# 4.11 — Spatial Fraud Features
-def add_spatial_fraud_features(df: pd.DataFrame, fraud_transactions: pd.DataFrame) -> pd.DataFrame:
+# 4.18.7 — Spatial Fraud Features (1km and 3km)
+def add_spatial_fraud_features(df: pd.DataFrame, fraud_withdrawals: pd.DataFrame) -> pd.DataFrame:
     """Count fraud events within 1km and 3km occurring on or before observation time."""
-    fraud_transactions = fraud_transactions.copy()
+    fw_lat = fraud_withdrawals["latitude"].values
+    fw_lon = fraud_withdrawals["longitude"].values
+    fw_times = fraud_withdrawals["timestamp"].values
 
-    result = []
+    f1km, f3km = [], []
     for _, row in df.iterrows():
         t = row["observation_time"]
-        historical = fraud_transactions[fraud_transactions["timestamp"] <= t]
+        mask = fw_times <= t
+        if not mask.any():
+            f1km.append(0)
+            f3km.append(0)
+        else:
+            d = haversine_distance(row["latitude"], row["longitude"], fw_lat[mask], fw_lon[mask])
+            f1km.append(int((d <= 1.0).sum()))
+            f3km.append(int((d <= 3.0).sum()))
 
-        features = row.to_dict()
-        if historical.empty:
-            features["fraud_events_1km"] = 0
-            features["fraud_events_3km"] = 0
-            result.append(features)
-            continue
-
-        distances = haversine_distance(
-            row["latitude"],
-            row["longitude"],
-            historical["latitude"].values,
-            historical["longitude"].values
-        )
-
-        features["fraud_events_1km"] = int((distances <= 1.0).sum())
-        features["fraud_events_3km"] = int((distances <= 3.0).sum())
-        result.append(features)
-
-    return pd.DataFrame(result)
+    df["fraud_events_1km"] = f1km
+    df["fraud_events_3km"] = f3km
+    return df
 
 
-# 4.12 — Distance from Recent Fraud
-def add_distance_from_recent_fraud(df: pd.DataFrame, fraud_transactions: pd.DataFrame) -> pd.DataFrame:
+# 4.18.8 — Distance from Recent Fraud
+def add_distance_from_recent_fraud(df: pd.DataFrame, fraud_withdrawals: pd.DataFrame) -> pd.DataFrame:
     """Compute distance in km to the most recent fraud event occurring on or before observation time."""
-    fraud_transactions = fraud_transactions.sort_values("timestamp")
+    fw_lat = fraud_withdrawals["latitude"].values
+    fw_lon = fraud_withdrawals["longitude"].values
+    fw_times = fraud_withdrawals["timestamp"].values
 
-    result = []
+    dist_recent = []
     for _, row in df.iterrows():
         t = row["observation_time"]
-        historical = fraud_transactions[fraud_transactions["timestamp"] <= t]
+        mask = fw_times <= t
+        if not mask.any():
+            dist_recent.append(-1.0)
+        else:
+            recent_lat = fw_lat[mask][-1]
+            recent_lon = fw_lon[mask][-1]
+            d = haversine_distance(row["latitude"], row["longitude"], recent_lat, recent_lon)
+            dist_recent.append(float(d))
 
-        features = row.to_dict()
-        if historical.empty:
-            features["distance_from_recent_fraud"] = -1.0
-            result.append(features)
-            continue
-
-        recent = historical.iloc[-1]
-        distance = haversine_distance(
-            row["latitude"],
-            row["longitude"],
-            recent["latitude"],
-            recent["longitude"]
-        )
-
-        features["distance_from_recent_fraud"] = float(distance)
-        result.append(features)
-
-    return pd.DataFrame(result)
+    df["distance_from_recent_fraud"] = dist_recent
+    return df
 
 
-# 4.13 — Historical Hotspot Score
-def add_historical_hotspot_score(df: pd.DataFrame, fraud_transactions: pd.DataFrame) -> pd.DataFrame:
-    """Calculate prototype historical hotspot score (0-100) per ATM."""
-    fraud_counts = (
-        fraud_transactions.groupby("atm_id")
-        .size()
-        .rename("historical_fraud_count")
-        .reset_index()
-    )
+# 4.18.9 — Historical Hotspot Score (Temporally Safe)
+def add_historical_hotspot_score(df: pd.DataFrame, fraud_withdrawals: pd.DataFrame) -> pd.DataFrame:
+    """Calculate rolling historical fraud count and normalized hotspot score per ATM (strictly <= T)."""
+    atm_fraud = {k: v["timestamp"].sort_values().values for k, v in fraud_withdrawals.groupby("atm_id")}
 
-    df = df.merge(fraud_counts, on="atm_id", how="left")
-    df["historical_fraud_count"] = df["historical_fraud_count"].fillna(0)
+    hist_counts = []
+    for _, row in df.iterrows():
+        t = row["observation_time"]
+        ts_f = atm_fraud.get(row["atm_id"])
+        if ts_f is not None and len(ts_f) > 0:
+            hist_counts.append(int(np.searchsorted(ts_f, t, side="right")))
+        else:
+            hist_counts.append(0)
 
+    df["historical_fraud_count"] = hist_counts
     max_count = df["historical_fraud_count"].max()
     if max_count > 0:
-        df["historical_hotspot_score"] = (
-            df["historical_fraud_count"] / max_count * 100.0
-        )
+        df["historical_hotspot_score"] = (df["historical_fraud_count"] / max_count * 100.0)
     else:
         df["historical_hotspot_score"] = 0.0
 
     return df
+
+
+# 4.18.10 — Future 3-Hour Target
+def create_future_target(
+    df: pd.DataFrame,
+    transactions: pd.DataFrame,
+    threshold: int = 2
+) -> pd.DataFrame:
+    """
+    Creates the forecasting target.
+
+    target = 1 if an ATM experiences at least `threshold` fraud-related
+             withdrawals during the next 3 hours (T, T + 3h].
+    """
+    fraud_withdrawals = transactions[
+        (transactions["risk_label"] == 1) &
+        (transactions["transaction_type"] == "WITHDRAWAL")
+    ].sort_values("timestamp")
+
+    atm_fraud = {k: v["timestamp"].values for k, v in fraud_withdrawals.groupby("atm_id")}
+
+    future_cnts = []
+    for _, row in df.iterrows():
+        atm_id = row["atm_id"]
+        t = row["observation_time"]
+        future_end = t + pd.Timedelta(hours=3)
+        ts_arr = atm_fraud.get(atm_id)
+        if ts_arr is not None and len(ts_arr) > 0:
+            low = np.searchsorted(ts_arr, t, side="right")
+            high = np.searchsorted(ts_arr, future_end, side="right")
+            future_cnts.append(int(high - low))
+        else:
+            future_cnts.append(0)
+
+    df["future_fraud_withdrawals_3h"] = future_cnts
+    df["target"] = (df["future_fraud_withdrawals_3h"] >= threshold).astype(int)
+    return df
+
+
+# 4.18.11 — Complete Feature Dataset Builder
+def build_feature_dataset() -> pd.DataFrame:
+    """Build complete Phase 4 feature matrix adhering strictly to Zero-Leakage rules."""
+    print("Loading processed data...")
+    atms, complaints, transactions = load_processed_data()
+
+    print("Creating transaction observations...")
+    df = create_transaction_observations(transactions)
+    print(f"Observations created: {len(df):,}")
+
+    df = attach_atm_information(df, atms)
+
+    print("Creating temporal features...")
+    df = add_temporal_features(df)
+
+    withdrawals = transactions[
+        transactions["transaction_type"] == "WITHDRAWAL"
+    ].copy().sort_values("timestamp")
+
+    fraud_withdrawals = transactions[
+        (transactions["risk_label"] == 1) &
+        (transactions["transaction_type"] == "WITHDRAWAL")
+    ].copy().sort_values("timestamp")
+
+    print("Creating complaint features...")
+    df = add_complaint_features(df, complaints)
+
+    print("Creating withdrawal features...")
+    df = add_withdrawal_window_features(df, withdrawals)
+
+    print("Creating financial features...")
+    df = add_financial_features(df, withdrawals)
+
+    print("Creating spatial complaint features...")
+    df = add_spatial_complaint_features(df, complaints)
+
+    print("Creating spatial fraud features...")
+    df = add_spatial_fraud_features(df, fraud_withdrawals)
+
+    print("Creating distance feature...")
+    df = add_distance_from_recent_fraud(df, fraud_withdrawals)
+
+    print("Creating historical hotspot score...")
+    df = add_historical_hotspot_score(df, fraud_withdrawals)
+
+    print("Creating future target (threshold >= 2)...")
+    df = create_future_target(df, transactions, threshold=2)
+
+    return df
+
+
+def audit_leakage(df: pd.DataFrame) -> List[str]:
+    """Audit dataset to ensure no forbidden columns are used as model input features."""
+    present_forbidden = [col for col in FORBIDDEN_FEATURES if col in df.columns]
+    return present_forbidden
 
 
 # Utilities and Pipeline
@@ -386,155 +451,51 @@ def build_feature_pipeline(
     return ColumnTransformer(transformers=transformers, remainder="drop")
 
 
-# 4.16 — Future 3-Hour Target Construction
-def create_future_target(
-    df: pd.DataFrame,
-    transactions: pd.DataFrame,
-    threshold: int = 2
-) -> pd.DataFrame:
-    """
-    Creates the forecasting target.
+if __name__ == "__main__":
+    df = build_feature_dataset()
 
-    target = 1 if an ATM experiences at least
-             `threshold` fraud-related withdrawals
-             during the next 3 hours.
+    print("\n===== FINAL FEATURES =====")
+    print(df.columns.tolist())
 
-    IMPORTANT:
-    Future transactions are used ONLY to create
-    the target and must never be used as input features.
-    """
-    fraud_withdrawals = transactions[
-        (transactions["risk_label"] == 1) &
-        (transactions["transaction_type"] == "WITHDRAWAL")
-    ].copy()
+    # Leakage Audit
+    print("\n===== LEAKAGE CHECK =====")
+    present_forbidden = audit_leakage(df)
+    print("Forbidden columns present:", present_forbidden)
+    model_features_leakage = [col for col in ALL_MODEL_FEATURES if col in FORBIDDEN_FEATURES]
+    print("Forbidden model features in ALL_MODEL_FEATURES:", model_features_leakage)
 
-    # Optimized vectorization for scalable ATM x time evaluation
-    # (Matches exact condition: observation_time < timestamp <= observation_time + 3h)
-    h0 = fraud_withdrawals["timestamp"].dt.floor("h")
-    is_exact = (fraud_withdrawals["timestamp"] == h0)
+    # Save processed feature dataset
+    FEATURE_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = FEATURE_DIR / "feature_dataset.csv"
+    df.to_csv(output_path, index=False)
+    print(f"\nFeature dataset saved to:\n{output_path}")
 
-    records = []
-    for off in [0, 1, 2]:
-        valid = ~is_exact
-        if valid.any():
-            records.append(pd.DataFrame({
-                "atm_id": fraud_withdrawals.loc[valid, "atm_id"],
-                "observation_time": h0.loc[valid] - pd.Timedelta(hours=off)
-            }))
-
-    for off in [1, 2, 3]:
-        valid = is_exact
-        if valid.any():
-            records.append(pd.DataFrame({
-                "atm_id": fraud_withdrawals.loc[valid, "atm_id"],
-                "observation_time": h0.loc[valid] - pd.Timedelta(hours=off)
-            }))
-
-    if records:
-        all_events = pd.concat(records, ignore_index=True)
-        counts = (
-            all_events.groupby(["atm_id", "observation_time"])
-            .size()
-            .rename("future_fraud_withdrawals_3h")
-            .reset_index()
-        )
-        df_out = df.merge(counts, on=["atm_id", "observation_time"], how="left")
-        df_out["future_fraud_withdrawals_3h"] = (
-            df_out["future_fraud_withdrawals_3h"].fillna(0).astype(int)
-        )
-    else:
-        df_out = df.copy()
-        df_out["future_fraud_withdrawals_3h"] = 0
-
-    df_out["target"] = (
-        df_out["future_fraud_withdrawals_3h"] >= threshold
-    ).astype(int)
-
-    return df_out
-
-
-# 4.17 — Target Distribution Test
-def test_target_distribution(
-    atms: pd.DataFrame,
-    transactions: pd.DataFrame
-) -> pd.DataFrame:
-    """Test target distribution and class balance across the ATM x Time grid."""
-    print("Generating hourly observation timestamps...")
-    observation_times = create_observation_times(transactions)
-
-    print("Constructing ATM x Observation Time grid...")
-    grid = create_atm_time_grid(atms, observation_times)
-
-    print("Evaluating future 3-hour fraud-withdrawal target (threshold >= 2)...")
-    grid = create_future_target(grid, transactions, threshold=2)
+    # Checkpoint validation prints
+    print("\n===== FEATURE DATASET SHAPE =====")
+    print(df.shape)
 
     print("\n===== TARGET DISTRIBUTION =====")
-    print(grid["target"].value_counts())
+    print(df["target"].value_counts())
+    print(df["target"].value_counts(normalize=True) * 100)
 
-    print("\n===== TARGET PERCENTAGES =====")
-    print(grid["target"].value_counts(normalize=True).mul(100).round(2))
+    print("\n===== MISSING VALUES =====")
+    missing_vals = df.isna().sum().sort_values(ascending=False)
+    print(missing_vals[missing_vals > 0] if (missing_vals > 0).any() else "None (0)")
 
-    print("\n===== FUTURE FRAUD COUNT =====")
-    print(grid["future_fraud_withdrawals_3h"].describe())
+    print("\n===== DUPLICATES =====")
+    print(df.duplicated().sum())
 
-    return grid
-
-
-# 4.18 — Transaction-Anchored Observation Unit
-def create_transaction_observations(transactions: pd.DataFrame) -> pd.DataFrame:
-    """Create observation points anchored on transaction timestamps per ATM."""
-    observations = (
-        transactions[["atm_id", "timestamp"]]
-        .drop_duplicates()
-        .rename(columns={"timestamp": "observation_time"})
-        .sort_values(["atm_id", "observation_time"])
-        .reset_index(drop=True)
-    )
-    return observations
-
-
-def test_transaction_observations(transactions: pd.DataFrame) -> pd.DataFrame:
-    """Test transaction-anchored observations and evaluate target balance."""
-    observations = create_transaction_observations(transactions)
-
-    print("\n===== TRANSACTION-ANCHORED OBSERVATIONS =====")
-    print("Total observations:", len(observations))
-    print("Unique ATMs:", observations["atm_id"].nunique())
-    print("\nObservations per ATM:")
-    print(observations.groupby("atm_id").size().describe())
-
-    fraud_withdrawals = transactions[
-        (transactions["risk_label"] == 1) &
-        (transactions["transaction_type"] == "WITHDRAWAL")
+    print("\n===== SAMPLE DATA (FIRST 10 ROWS) =====")
+    sample_cols = [
+        "observation_time",
+        "complaints_last_1h",
+        "complaints_last_6h",
+        "withdrawals_last_1h",
+        "withdrawals_last_6h",
+        "fraud_events_1km",
+        "fraud_events_3km",
+        "distance_from_recent_fraud",
+        "historical_hotspot_score",
+        "target"
     ]
-
-    result = []
-    for _, row in observations.iterrows():
-        future_end = row["observation_time"] + pd.Timedelta(hours=3)
-        future_count = len(
-            fraud_withdrawals[
-                (fraud_withdrawals["atm_id"] == row["atm_id"]) &
-                (fraud_withdrawals["timestamp"] > row["observation_time"]) &
-                (fraud_withdrawals["timestamp"] <= future_end)
-            ]
-        )
-        result.append(future_count)
-
-    observations["future_fraud_withdrawals_3h"] = result
-
-    print("\n===== FUTURE FRAUD DISTRIBUTION =====")
-    print(observations["future_fraud_withdrawals_3h"].describe())
-
-    print("\n===== TARGET THRESHOLDS =====")
-    counts = observations["future_fraud_withdrawals_3h"]
-    for threshold in [1, 2, 3, 4]:
-        positives = (counts >= threshold).sum()
-        percentage = positives / len(observations) * 100
-        print(f">= {threshold}: {positives:,} ({percentage:.2f}%)")
-
-    return observations
-
-
-if __name__ == "__main__":
-    atms, complaints, transactions = load_processed_data()
-    observations = test_transaction_observations(transactions)
+    print(df[sample_cols].head(10))
