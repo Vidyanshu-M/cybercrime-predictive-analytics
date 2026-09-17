@@ -1,6 +1,19 @@
+"""Phase 6B: Model Evaluation Module.
+
+Evaluates model predictions on validation or test sets using the metrics specified in the blueprint:
+- Precision (mitigating alert fatigue)
+- Recall (catching active fraud bursts)
+- F1-Score (harmonic balance)
+- ROC-AUC (discriminative ability across thresholds)
+- PR-AUC / Average Precision (critical metric for imbalanced fraud events)
+- Confusion Matrix & Detailed Classification Report
+"""
+
+import os
+from typing import Dict, Any, Optional
+import joblib
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, Optional
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -9,47 +22,59 @@ from sklearn.metrics import (
     roc_auc_score,
     average_precision_score,
     confusion_matrix,
-    classification_report
+    classification_report,
 )
 
-# ==============================================================================
-# ML Evaluation Metrics for Cybercrime Hotspot Alerting
-# 
-# As highlighted in the system blueprint:
-# In high-stakes cybercrime / ATM fraud alerting, class distributions are heavily
-# imbalanced (normal events vastly outnumber crime incidents). A naive classifier
-# predicting 0 (no incident) could achieve 95%+ accuracy while failing completely.
-#
-# Core evaluation criteria:
-# 1. Precision : Avoid alert fatigue and false police dispatches
-# 2. Recall    : Catch active fraud occurrences and high-risk hotspots
-# 3. F1-Score  : Harmonic balance between Precision and Recall
-# 4. ROC-AUC   : Discriminative power across all classification thresholds
-# 5. PR-AUC    : Crucial metric for imbalanced positive fraud events
-# ==============================================================================
+FEATURES = [
+    "hour",
+    "day_of_week",
+    "is_weekend",
+    "complaints_last_1h",
+    "complaints_last_6h",
+    "complaints_last_24h",
+    "withdrawals_last_1h",
+    "withdrawals_last_6h",
+    "withdrawals_last_24h",
+    "withdrawal_count",
+    "total_withdrawal_amount",
+    "average_withdrawal",
+    "unique_accounts",
+    "transaction_velocity",
+    "complaints_1km",
+    "complaints_3km",
+    "fraud_events_1km",
+    "fraud_events_3km",
+    "distance_from_recent_fraud",
+    "historical_fraud_count",
+    "historical_hotspot_score",
+]
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+VALIDATION_PATH = os.path.join(
+    BASE_DIR,
+    "data",
+    "processed",
+    "validation.csv",
+)
+
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "models",
+    "logistic_regression_baseline.joblib",
+)
 
 
 def evaluate_predictions(
-    y_true: np.ndarray, 
-    y_pred: np.ndarray, 
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
     y_proba: Optional[np.ndarray] = None,
     pos_label: int = 1
 ) -> Dict[str, Any]:
-    """Evaluate classification performance focusing on precision, recall, F1, ROC-AUC, and PR-AUC.
-
-    Args:
-        y_true (np.ndarray): Ground truth labels (0 = Normal, 1 = Incident/Fraud).
-        y_pred (np.ndarray): Binary model predictions.
-        y_proba (Optional[np.ndarray]): Probability predictions.
-        pos_label (int): Positive class label indicating incident (default 1).
-
-    Returns:
-        Dict[str, Any]: Metric dictionary with precision, recall, f1, roc_auc, pr_auc.
-    """
+    """Helper function to calculate dictionary of standard evaluation metrics."""
     y_true_arr = np.asarray(y_true)
     y_pred_arr = np.asarray(y_pred)
 
-    # Core threshold-dependent metrics
     precision = float(precision_score(y_true_arr, y_pred_arr, pos_label=pos_label, zero_division=0))
     recall = float(recall_score(y_true_arr, y_pred_arr, pos_label=pos_label, zero_division=0))
     f1 = float(f1_score(y_true_arr, y_pred_arr, pos_label=pos_label, zero_division=0))
@@ -60,35 +85,18 @@ def evaluate_predictions(
         "recall": recall,
         "f1": f1,
         "accuracy": accuracy,
-        "precision_macro": float(precision_score(y_true_arr, y_pred_arr, average="macro", zero_division=0)),
-        "recall_macro": float(recall_score(y_true_arr, y_pred_arr, average="macro", zero_division=0)),
-        "f1_macro": float(f1_score(y_true_arr, y_pred_arr, average="macro", zero_division=0)),
         "confusion_matrix": confusion_matrix(y_true_arr, y_pred_arr).tolist(),
-        "classification_report": classification_report(y_true_arr, y_pred_arr, output_dict=True, zero_division=0)
     }
 
-    # Probability-based metrics: ROC-AUC and PR-AUC
     if y_proba is not None:
         proba_arr = np.asarray(y_proba)
-        
-        # Extract probability of positive incident class
         if proba_arr.ndim == 2 and proba_arr.shape[1] > 1:
-            pos_proba = proba_arr[:, pos_label] if proba_arr.shape[1] > pos_label else proba_arr[:, 1]
+            pos_proba = proba_arr[:, pos_label]
         else:
             pos_proba = proba_arr.ravel()
 
-        try:
-            metrics["roc_auc"] = float(roc_auc_score(y_true_arr, pos_proba))
-        except Exception as e:
-            metrics["roc_auc"] = None
-            metrics["roc_auc_error"] = str(e)
-
-        try:
-            # PR-AUC / Average Precision Score
-            metrics["pr_auc"] = float(average_precision_score(y_true_arr, pos_proba))
-        except Exception as e:
-            metrics["pr_auc"] = None
-            metrics["pr_auc_error"] = str(e)
+        metrics["roc_auc"] = float(roc_auc_score(y_true_arr, pos_proba))
+        metrics["pr_auc"] = float(average_precision_score(y_true_arr, pos_proba))
     else:
         metrics["roc_auc"] = None
         metrics["pr_auc"] = None
@@ -96,29 +104,75 @@ def evaluate_predictions(
     return metrics
 
 
-def print_evaluation_summary(metrics: Dict[str, Any]) -> None:
-    """Print clean terminal summary of all 5 critical evaluation metrics.
+def main():
+    print("=" * 60)
+    print("PHASE 6B: LOGISTIC REGRESSION EVALUATION")
+    print("=" * 60)
 
-    Args:
-        metrics (Dict[str, Any]): Evaluated metrics dictionary.
-    """
-    print("\n==================================================")
-    print("      CYBERCRIME HOTSPOT EVALUATION METRICS       ")
-    print("==================================================")
-    print(f"  Precision (Fraud Class): {metrics.get('precision', 0.0):.4f}")
-    print(f"  Recall    (Fraud Class): {metrics.get('recall', 0.0):.4f}")
-    print(f"  F1-Score  (Fraud Class): {metrics.get('f1', 0.0):.4f}")
-    
-    roc = metrics.get('roc_auc')
-    roc_str = f"{roc:.4f}" if roc is not None else "N/A"
-    print(f"  ROC-AUC                : {roc_str}")
+    # ---------------------------------------------------------
+    # Load validation data
+    # ---------------------------------------------------------
+    validation = pd.read_csv(VALIDATION_PATH)
 
-    pr = metrics.get('pr_auc')
-    pr_str = f"{pr:.4f}" if pr is not None else "N/A"
-    print(f"  PR-AUC                 : {pr_str}")
+    X_val = validation[FEATURES]
+    y_val = validation["target"]
 
-    print("--------------------------------------------------")
-    print(f"  Accuracy (Reference)   : {metrics.get('accuracy', 0.0):.4f}")
-    print("  * Note: Accuracy alone is not an authoritative")
-    print("    metric due to severe fraud class imbalance.")
-    print("==================================================\n")
+    print("\n===== DATA CHECK =====")
+    print(f"Validation rows: {len(validation):,}")
+    print(f"Number of features: {len(FEATURES)}")
+    print(f"Validation positives: {y_val.sum():,}")
+    print(f"Validation negatives: {(y_val == 0).sum():,}")
+
+    # ---------------------------------------------------------
+    # Load trained model
+    # ---------------------------------------------------------
+    print("\nLoading trained Logistic Regression model...")
+    model = joblib.load(MODEL_PATH)
+
+    # ---------------------------------------------------------
+    # Predictions (Baseline Threshold = 0.50)
+    # ---------------------------------------------------------
+    y_probability = model.predict_proba(X_val)[:, 1]
+    y_prediction = (y_probability >= 0.50).astype(int)
+
+    # ---------------------------------------------------------
+    # Metrics
+    # ---------------------------------------------------------
+    precision = precision_score(y_val, y_prediction, zero_division=0)
+    recall = recall_score(y_val, y_prediction, zero_division=0)
+    f1 = f1_score(y_val, y_prediction, zero_division=0)
+    roc_auc = roc_auc_score(y_val, y_probability)
+    pr_auc = average_precision_score(y_val, y_probability)
+    cm = confusion_matrix(y_val, y_prediction)
+
+    # ---------------------------------------------------------
+    # Output
+    # ---------------------------------------------------------
+    print("\n===== VALIDATION METRICS =====")
+    print(f"Precision : {precision:.4f}")
+    print(f"Recall    : {recall:.4f}")
+    print(f"F1 Score  : {f1:.4f}")
+    print(f"ROC-AUC   : {roc_auc:.4f}")
+    print(f"PR-AUC    : {pr_auc:.4f}")
+
+    print("\n===== CONFUSION MATRIX =====")
+    print(cm)
+    print("\nFormat:")
+    print("[[TN FP]")
+    print(" [FN TP]]")
+
+    print("\n===== CLASSIFICATION REPORT =====")
+    print(
+        classification_report(
+            y_val,
+            y_prediction,
+            digits=4,
+            zero_division=0,
+        )
+    )
+
+    print("\nEvaluation completed successfully.")
+
+
+if __name__ == "__main__":
+    main()
