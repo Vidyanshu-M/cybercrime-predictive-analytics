@@ -45,7 +45,7 @@ BANKS_DATA = [
 
 # 20 Realistic Districts across Uttar Pradesh with anchor coordinates and crime vulnerability weights
 DISTRICTS = [
-    {"district": "Varanasi", "lat": 25.3176, "lon": 82.9739, "risk_mult": 2.8, "areas": [
+    {"district_id": "DIST001", "district": "Varanasi", "lat": 25.3176, "lon": 82.9739, "risk_mult": 2.8, "areas": [
         ("Lanka", "Lanka PS", 25.2810, 82.9995),
         ("Cantt", "Cantt PS", 25.3340, 82.9860),
         ("Godowlia", "Dashashwamedh PS", 25.3090, 83.0080),
@@ -54,94 +54,110 @@ DISTRICTS = [
         ("Shivpur", "Shivpur PS", 25.3650, 82.9620),
         ("Sarnath", "Sarnath PS", 25.3720, 83.0230)
     ]},
-    {"district": "Lucknow", "lat": 26.8467, "lon": 80.9462, "risk_mult": 2.6, "areas": [
+    {"district_id": "DIST002", "district": "Lucknow", "lat": 26.8467, "lon": 80.9462, "risk_mult": 2.6, "areas": [
         ("Hazratganj", "Hazratganj PS", 26.8520, 80.9430),
         ("Gomti Nagar", "Gomti Nagar PS", 26.8580, 80.9980),
         ("Alambagh", "Alambagh PS", 26.8080, 80.9080),
         ("Indira Nagar", "Indira Nagar PS", 26.8830, 80.9850),
         ("Charbagh", "Charbagh PS", 26.8310, 80.9210)
     ]},
-    {"district": "Kanpur Nagar", "lat": 26.4499, "lon": 80.3319, "risk_mult": 2.4, "areas": [
+    {"district_id": "DIST003", "district": "Kanpur Nagar", "lat": 26.4499, "lon": 80.3319, "risk_mult": 2.4, "areas": [
         ("Civil Lines", "Civil Lines PS", 26.4720, 80.3480),
         ("Govind Nagar", "Govind Nagar PS", 26.4350, 80.3120),
         ("Kalyanpur", "Kalyanpur PS", 26.4950, 80.2580),
         ("Kidwai Nagar", "Kidwai Nagar PS", 26.4210, 80.3390)
     ]},
-    {"district": "Prayagraj", "lat": 25.4358, "lon": 81.8463, "risk_mult": 2.2, "areas": [
+    {"district_id": "DIST004", "district": "Prayagraj", "lat": 25.4358, "lon": 81.8463, "risk_mult": 2.2, "areas": [
         ("Civil Lines", "Civil Lines PS", 25.4520, 81.8340),
         ("Katra", "Colonelganj PS", 25.4610, 81.8590),
         ("Naini", "Naini PS", 25.3850, 81.8680),
         ("Jhusi", "Jhusi PS", 25.4290, 81.9050)
     ]},
-    {"district": "Noida (Gautam Buddha Nagar)", "lat": 28.5355, "lon": 77.3910, "risk_mult": 3.0, "areas": [
+    {"district_id": "DIST005", "district": "Noida (Gautam Buddha Nagar)", "lat": 28.5355, "lon": 77.3910, "risk_mult": 3.0, "areas": [
         ("Sector 18", "Sector 20 PS", 28.5700, 77.3220),
         ("Sector 62", "Sector 58 PS", 28.6210, 77.3650),
         ("Greater Noida Alpha", "Kasna PS", 28.4720, 77.5110),
         ("Sector 137", "Surajpur PS", 28.5130, 77.4080)
     ]},
-    {"district": "Ghaziabad", "lat": 28.6692, "lon": 77.4538, "risk_mult": 2.7, "areas": [
+    {"district_id": "DIST006", "district": "Ghaziabad", "lat": 28.6692, "lon": 77.4538, "risk_mult": 2.7, "areas": [
         ("Indirapuram", "Indirapuram PS", 28.6430, 77.3710),
         ("Vaishali", "Kaushambi PS", 28.6480, 77.3410),
         ("Raj Nagar", "Kavi Nagar PS", 28.6850, 77.4510)
     ]},
-    {"district": "Agra", "lat": 27.1767, "lon": 78.0081, "risk_mult": 2.0, "areas": [
+    {"district_id": "DIST007", "district": "Agra", "lat": 27.1767, "lon": 78.0081, "risk_mult": 2.0, "areas": [
         ("Tajganj", "Tajganj PS", 27.1620, 78.0410),
         ("Sanjay Place", "Hari Parwat PS", 27.1990, 78.0030),
         ("Cantt Agra", "Sadar Bazar PS", 27.1550, 78.0090)
     ]},
-    {"district": "Meerut", "lat": 28.9845, "lon": 77.7064, "risk_mult": 2.3, "areas": [
+    {"district_id": "DIST008", "district": "Meerut", "lat": 28.9845, "lon": 77.7064, "risk_mult": 2.3, "areas": [
         ("Shastri Nagar", "Nauchandi PS", 28.9720, 77.7310),
         ("Begum Bridge", "Sadar PS", 28.9950, 77.7020)
     ]},
-    {"district": "Bareilly", "lat": 28.3670, "lon": 79.4304, "risk_mult": 1.5, "areas": [
+    {"district_id": "DIST009", "district": "Bareilly", "lat": 28.3670, "lon": 79.4304, "risk_mult": 1.5, "areas": [
         ("Civil Lines", "Kotwali PS", 28.3580, 79.4210),
         ("C.B. Ganj", "CB Ganj PS", 28.4120, 79.3520)
     ]},
-    {"district": "Aligarh", "lat": 27.8974, "lon": 78.0880, "risk_mult": 1.7, "areas": [
+    {"district_id": "DIST010", "district": "Aligarh", "lat": 27.8974, "lon": 78.0880, "risk_mult": 1.7, "areas": [
         ("Civil Lines", "Civil Lines PS", 27.9120, 78.0750),
         ("University Market", "Kwarsi PS", 27.9250, 78.0920)
     ]},
-    {"district": "Moradabad", "lat": 28.8386, "lon": 78.7733, "risk_mult": 1.6, "areas": [
+    {"district_id": "DIST011", "district": "Moradabad", "lat": 28.8386, "lon": 78.7733, "risk_mult": 1.6, "areas": [
         ("Civil Lines", "Civil Lines PS", 28.8450, 78.7610),
         ("Majhola", "Majhola PS", 28.8120, 78.7410)
     ]},
-    {"district": "Gorakhpur", "lat": 26.7606, "lon": 83.3732, "risk_mult": 1.8, "areas": [
+    {"district_id": "DIST012", "district": "Gorakhpur", "lat": 26.7606, "lon": 83.3732, "risk_mult": 1.8, "areas": [
         ("Golghar", "Cantt PS", 26.7580, 83.3710),
         ("Medical College Road", "Gulriha PS", 26.7920, 83.3950)
     ]},
-    {"district": "Ayodhya (Faizabad)", "lat": 26.7730, "lon": 82.1460, "risk_mult": 1.4, "areas": [
+    {"district_id": "DIST013", "district": "Ayodhya (Faizabad)", "lat": 26.7730, "lon": 82.1460, "risk_mult": 1.4, "areas": [
         ("Civil Lines", "Kotwali PS", 26.7780, 82.1380),
         ("Naya Ghat", "Ayodhya PS", 26.7950, 82.2020)
     ]},
-    {"district": "Jhansi", "lat": 25.4484, "lon": 78.5685, "risk_mult": 1.3, "areas": [
+    {"district_id": "DIST014", "district": "Jhansi", "lat": 25.4484, "lon": 78.5685, "risk_mult": 1.3, "areas": [
         ("Sadar Bazar", "Sadar PS", 25.4350, 78.5610),
         ("Nawabad", "Nawabad PS", 25.4590, 78.5780)
     ]},
-    {"district": "Mathura", "lat": 27.4924, "lon": 77.6737, "risk_mult": 1.5, "areas": [
+    {"district_id": "DIST015", "district": "Mathura", "lat": 27.4924, "lon": 77.6737, "risk_mult": 1.5, "areas": [
         ("Krishna Nagar", "Kotwali PS", 27.4990, 77.6680),
         ("Highway Mathura", "Highway PS", 27.4720, 77.6350)
     ]},
-    {"district": "Muzaffarnagar", "lat": 29.4727, "lon": 77.7085, "risk_mult": 1.5, "areas": [
+    {"district_id": "DIST016", "district": "Muzaffarnagar", "lat": 29.4727, "lon": 77.7085, "risk_mult": 1.5, "areas": [
         ("Civil Lines", "Civil Lines PS", 29.4790, 77.7020),
         ("New Mandi", "New Mandi PS", 29.4620, 77.7210)
     ]},
-    {"district": "Saharanpur", "lat": 29.9640, "lon": 77.5460, "risk_mult": 1.4, "areas": [
+    {"district_id": "DIST017", "district": "Saharanpur", "lat": 29.9640, "lon": 77.5460, "risk_mult": 1.4, "areas": [
         ("Court Road", "Sadar PS", 29.9680, 77.5420),
         ("Delhi Road", "Janakpuri PS", 29.9450, 77.5280)
     ]},
-    {"district": "Firozabad", "lat": 27.1590, "lon": 78.3957, "risk_mult": 1.2, "areas": [
+    {"district_id": "DIST018", "district": "Firozabad", "lat": 27.1590, "lon": 78.3957, "risk_mult": 1.2, "areas": [
         ("Station Road", "Uttar PS", 27.1550, 78.3980),
         ("Suhag Nagar", "Dakshin PS", 27.1680, 78.4120)
     ]},
-    {"district": "Mirzapur", "lat": 25.1337, "lon": 82.5644, "risk_mult": 0.9, "areas": [
+    {"district_id": "DIST019", "district": "Mirzapur", "lat": 25.1337, "lon": 82.5644, "risk_mult": 0.9, "areas": [
         ("Dankeen Ganj", "Kotwali PS", 25.1480, 82.5710),
         ("Vindhyachal", "Vindhyachal PS", 25.1620, 82.5020)
     ]},
-    {"district": "Jaunpur", "lat": 25.7464, "lon": 82.6837, "risk_mult": 1.1, "areas": [
+    {"district_id": "DIST020", "district": "Jaunpur", "lat": 25.7464, "lon": 82.6837, "risk_mult": 1.1, "areas": [
         ("Line Bazar", "Line Bazar PS", 25.7350, 82.6780),
         ("Shahganj Road", "Kotwali PS", 25.7550, 82.6920)
     ]}
 ]
+
+
+def generate_districts() -> pd.DataFrame:
+    """Generate 20 districts dataset (districts.csv)."""
+    dist_list = []
+    for d in DISTRICTS:
+        dist_list.append({
+            "district_id": d["district_id"],
+            "district_name": d["district"],
+            "state": "Uttar Pradesh",
+            "latitude": d["lat"],
+            "longitude": d["lon"],
+            "risk_multiplier": d["risk_mult"],
+            "area_count": len(d["areas"])
+        })
+    return pd.DataFrame(dist_list)
 
 # Crime Categories (1.5)
 CRIME_CATEGORIES = [
@@ -212,6 +228,7 @@ def generate_atms(df_banks: pd.DataFrame, num_atms: int = 500) -> pd.DataFrame:
             "atm_id": atm_id,
             "atm_code": atm_code,
             "bank_id": bank_id,
+            "district_id": chosen_dist["district_id"],
             "latitude": round(base_lat + lat_jitter, 6),
             "longitude": round(base_lon + lon_jitter, 6),
             "district": chosen_dist["district"],
@@ -442,6 +459,7 @@ def generate_complaints_and_transactions(
 
 def validate_datasets(
     df_banks: pd.DataFrame, 
+    df_districts: pd.DataFrame,
     df_atms: pd.DataFrame, 
     df_complaints: pd.DataFrame, 
     df_transactions: pd.DataFrame
@@ -451,13 +469,15 @@ def validate_datasets(
 
     # 1. Scale checks
     assert len(df_banks) == 10, f"Expected 10 banks, got {len(df_banks)}"
+    assert len(df_districts) == 20, f"Expected 20 districts, got {len(df_districts)}"
     assert len(df_atms) == 500, f"Expected 500 ATMs, got {len(df_atms)}"
     assert len(df_complaints) == 10000, f"Expected 10,000 complaints, got {len(df_complaints)}"
     assert len(df_transactions) == 30000, f"Expected 30,000 transactions, got {len(df_transactions)}"
-    print("[PASS] Exact scale validated: 10 banks, 500 ATMs, 10,000 complaints, 30,000 transactions.")
+    print("[PASS] Exact scale validated: 10 banks, 20 districts, 500 ATMs, 10,000 complaints, 30,000 transactions.")
 
     # 2. No duplicate IDs
     assert df_banks["bank_id"].is_unique, "Duplicate bank_id found!"
+    assert df_districts["district_id"].is_unique, "Duplicate district_id found!"
     assert df_atms["atm_id"].is_unique, "Duplicate atm_id found!"
     assert df_complaints["complaint_id"].is_unique, "Duplicate complaint_id found!"
     assert df_transactions["transaction_id"].is_unique, "Duplicate transaction_id found!"
@@ -467,12 +487,15 @@ def validate_datasets(
     valid_bank_ids = set(df_banks["bank_id"])
     assert set(df_atms["bank_id"]).issubset(valid_bank_ids), "Invalid bank_id in atms!"
 
+    valid_district_ids = set(df_districts["district_id"])
+    assert set(df_atms["district_id"]).issubset(valid_district_ids), "Invalid district_id in atms!"
+
     valid_atm_ids = set(df_atms["atm_id"])
     assert set(df_transactions["atm_id"]).issubset(valid_atm_ids), "Invalid atm_id in transactions!"
     print("[PASS] Relational integrity verified (Foreign Keys match).")
 
     # 4. Valid Coordinates
-    for df, name in [(df_atms, "atms"), (df_complaints, "complaints"), (df_transactions, "transactions")]:
+    for df, name in [(df_districts, "districts"), (df_atms, "atms"), (df_complaints, "complaints"), (df_transactions, "transactions")]:
         assert df["latitude"].between(24.0, 31.0).all(), f"Invalid latitude in {name}"
         assert df["longitude"].between(76.0, 85.0).all(), f"Invalid longitude in {name}"
     print("[PASS] Coordinate bounds verified within Uttar Pradesh jurisdiction.")
@@ -506,8 +529,11 @@ def run_pipeline():
 
     print("Step 1: Generating 10 Banks...")
     df_banks = generate_banks()
+
+    print("Step 2: Generating 20 Districts...")
+    df_districts = generate_districts()
     
-    print("Step 2 & 3: Generating 500 ATMs across UP Districts...")
+    print("Step 3: Generating 500 ATMs across UP Districts...")
     df_atms = generate_atms(df_banks, num_atms=500)
 
     print("Step 4, 5, 6, 7 & 8: Generating 10,000 Complaints & 30,000 Transactions...")
@@ -515,14 +541,14 @@ def run_pipeline():
         df_atms, total_complaints=10000, total_txns=30000
     )
 
-    # Drop helper internal column before export
+    # Export schema fields for ATMs
     df_atms_export = df_atms[[
-        "atm_id", "atm_code", "bank_id", "latitude", "longitude", 
+        "atm_id", "atm_code", "bank_id", "district_id", "latitude", "longitude", 
         "district", "area", "atm_type", "is_active"
     ]]
 
     # Step 9: Validate datasets
-    validate_datasets(df_banks, df_atms, df_complaints, df_transactions)
+    validate_datasets(df_banks, df_districts, df_atms, df_complaints, df_transactions)
 
     # Step 10: Save CSV files
     print("Step 10: Saving CSV datasets to data/raw/...")
@@ -530,6 +556,10 @@ def run_pipeline():
     banks_path = os.path.join(OUTPUT_DIR, "banks.csv")
     df_banks.to_csv(banks_path, index=False)
     print(f"  -> Saved {len(df_banks)} rows to {banks_path}")
+
+    districts_path = os.path.join(OUTPUT_DIR, "districts.csv")
+    df_districts.to_csv(districts_path, index=False)
+    print(f"  -> Saved {len(df_districts)} rows to {districts_path}")
 
     atms_path = os.path.join(OUTPUT_DIR, "atms.csv")
     df_atms_export.to_csv(atms_path, index=False)
