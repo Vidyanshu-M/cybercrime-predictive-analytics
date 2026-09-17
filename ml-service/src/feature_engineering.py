@@ -483,3 +483,14 @@ def test_target_distribution(
 if __name__ == "__main__":
     atms, complaints, transactions = load_processed_data()
     grid = test_target_distribution(atms, transactions)
+
+    print("\n===== TARGET THRESHOLD ANALYSIS =====")
+    counts = grid["future_fraud_withdrawals_3h"]
+    for threshold in [1, 2, 3, 4]:
+        positive = (counts >= threshold).sum()
+        percentage = positive / len(counts) * 100
+        print(
+            f"Threshold >= {threshold}: "
+            f"{positive:,} positives "
+            f"({percentage:.4f}%)"
+        )
