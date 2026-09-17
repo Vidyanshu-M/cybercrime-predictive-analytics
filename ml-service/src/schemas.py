@@ -112,3 +112,29 @@ class MLPredictResponse(BaseModel):
                 "modelVersion": "xgb-v1"
             }
         }
+
+
+def calculate_risk_level(risk_score: int) -> Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
+    """Map a 0-100 risk score to its corresponding risk tier.
+
+    Prototype Thresholds (Hackathon Prototype only, not official operational thresholds):
+    - 0–29   : LOW
+    - 30–59  : MEDIUM
+    - 60–79  : HIGH
+    - 80–100 : CRITICAL
+
+    Args:
+        risk_score (int): Scaled risk score between 0 and 100.
+
+    Returns:
+        Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]: The evaluated risk level.
+    """
+    if risk_score >= 80:
+        return "CRITICAL"
+    elif risk_score >= 60:
+        return "HIGH"
+    elif risk_score >= 30:
+        return "MEDIUM"
+    else:
+        return "LOW"
+

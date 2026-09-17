@@ -17,7 +17,7 @@ MODEL_PATH = os.getenv("MODEL_PATH", "models/cybercrime_model.joblib")
 MODEL_VERSION = os.getenv("MODEL_VERSION", "xgb-v1")
 
 
-from src.schemas import MLPredictRequest, MLPredictResponse
+from src.schemas import MLPredictRequest, MLPredictResponse, calculate_risk_level
 
 
 @app.on_event("startup")
@@ -73,14 +73,7 @@ def predict_incident(payload: MLPredictRequest):
             probability = 1.0 if pred == 1 else 0.0
 
         risk_score = int(round(probability * 100))
-        if risk_score >= 80:
-            risk_level = "CRITICAL"
-        elif risk_score >= 60:
-            risk_level = "HIGH"
-        elif risk_score >= 30:
-            risk_level = "MEDIUM"
-        else:
-            risk_level = "LOW"
+        risk_level = calculate_risk_level(risk_score)
 
         return MLPredictResponse(
             probability=probability,

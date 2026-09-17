@@ -77,15 +77,23 @@ Content-Type: application/json
 | `modelVersion` | string | Identifier of the trained model producing the prediction | `"xgb-v1"` |
 | `atmId` | string (optional) | Associated ATM identifier from the request | `"ATM1023"` |
 
-#### Field Meaning & Mapping:
-- **`probability`**: Direct model output probability (e.g., probability of positive cybercrime/fraud class).
-- **`riskScore`**: Scaled integer score `0`–`100` (`int(round(probability * 100))`).
-- **`riskLevel`**:
-  - `CRITICAL`: score $\ge$ 80
-  - `HIGH`: 60 $\le$ score < 80
-  - `MEDIUM`: 30 $\le$ score < 60
-  - `LOW`: score < 30
-- **`modelVersion`**: Version tag of the active inference artifact (e.g. `xgb-v1`).
+#### Risk Level Prototype Thresholds
+
+> [!NOTE]
+> These thresholds come directly from the blueprint and are explicitly described as **prototype thresholds only**, not official operational thresholds.
+
+| Risk Score | Level | Description |
+|:---:|:---:|:---|
+| **0 – 29** | `LOW` | Normal activity; minimal fraud or incident indicator |
+| **30 – 59** | `MEDIUM` | Elevated activity or minor anomaly detected; standard monitoring |
+| **60 – 79** | `HIGH` | High probability of fraudulent behavior; prompt review recommended |
+| **80 – 100** | `CRITICAL` | Severe threat indicators; immediate automated / investigator intervention |
+
+#### Field Descriptions:
+- **`probability`**: Direct model output probability (`0.0` to `1.0`).
+- **`riskScore`**: Scaled prototype integer score `0`–`100` (`int(round(probability * 100))`).
+- **`riskLevel`**: Categorical tier evaluated via prototype thresholds (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`).
+- **`modelVersion`**: Identifier of the active trained model (e.g. `xgb-v1`).
 
 #### Response Example:
 ```json
