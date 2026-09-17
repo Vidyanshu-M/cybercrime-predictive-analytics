@@ -480,17 +480,61 @@ def test_target_distribution(
     return grid
 
 
+# 4.18 — Transaction-Anchored Observation Unit
+def create_transaction_observations(transactions: pd.DataFrame) -> pd.DataFrame:
+    """Create observation points anchored on transaction timestamps per ATM."""
+    observations = (
+        transactions[["atm_id", "timestamp"]]
+        .drop_duplicates()
+        .rename(columns={"timestamp": "observation_time"})
+        .sort_values(["atm_id", "observation_time"])
+        .reset_index(drop=True)
+    )
+    return observations
+
+
+def test_transaction_observations(transactions: pd.DataFrame) -> pd.DataFrame:
+    """Test transaction-anchored observations and evaluate target balance."""
+    observations = create_transaction_observations(transactions)
+
+    print("\n===== TRANSACTION-ANCHORED OBSERVATIONS =====")
+    print("Total observations:", len(observations))
+    print("Unique ATMs:", observations["atm_id"].nunique())
+    print("\nObservations per ATM:")
+    print(observations.groupby("atm_id").size().describe())
+
+    fraud_withdrawals = transactions[
+        (transactions["risk_label"] == 1) &
+        (transactions["transaction_type"] == "WITHDRAWAL")
+    ]
+
+    result = []
+    for _, row in observations.iterrows():
+        future_end = row["observation_time"] + pd.Timedelta(hours=3)
+        future_count = len(
+            fraud_withdrawals[
+                (fraud_withdrawals["atm_id"] == row["atm_id"]) &
+                (fraud_withdrawals["timestamp"] > row["observation_time"]) &
+                (fraud_withdrawals["timestamp"] <= future_end)
+            ]
+        )
+        result.append(future_count)
+
+    observations["future_fraud_withdrawals_3h"] = result
+
+    print("\n===== FUTURE FRAUD DISTRIBUTION =====")
+    print(observations["future_fraud_withdrawals_3h"].describe())
+
+    print("\n===== TARGET THRESHOLDS =====")
+    counts = observations["future_fraud_withdrawals_3h"]
+    for threshold in [1, 2, 3, 4]:
+        positives = (counts >= threshold).sum()
+        percentage = positives / len(observations) * 100
+        print(f">= {threshold}: {positives:,} ({percentage:.2f}%)")
+
+    return observations
+
+
 if __name__ == "__main__":
     atms, complaints, transactions = load_processed_data()
-    grid = test_target_distribution(atms, transactions)
-
-    print("\n===== TARGET THRESHOLD ANALYSIS =====")
-    counts = grid["future_fraud_withdrawals_3h"]
-    for threshold in [1, 2, 3, 4]:
-        positive = (counts >= threshold).sum()
-        percentage = positive / len(counts) * 100
-        print(
-            f"Threshold >= {threshold}: "
-            f"{positive:,} positives "
-            f"({percentage:.4f}%)"
-        )
+    observations = test_transaction_observations(transactions)
