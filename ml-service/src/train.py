@@ -147,14 +147,15 @@ def compare_progression_models(
         summary_records.append({
             "model": model_name,
             "role": "baseline" if model_name == "logistic_regression" else ("comparison" if model_name == "random_forest" else "primary"),
-            "accuracy": metrics.get("accuracy", 0.0),
-            "precision": metrics.get("precision_macro", 0.0),
-            "recall": metrics.get("recall_macro", 0.0),
-            "f1_score": metrics.get("f1_macro", 0.0),
-            "roc_auc": metrics.get("roc_auc")
+            "precision": metrics.get("precision", 0.0),
+            "recall": metrics.get("recall", 0.0),
+            "f1_score": metrics.get("f1", 0.0),
+            "roc_auc": metrics.get("roc_auc"),
+            "pr_auc": metrics.get("pr_auc"),
+            "accuracy_ref": metrics.get("accuracy", 0.0)
         })
 
-    summary_df = pd.DataFrame(summary_records).sort_values(by="f1_score", ascending=False).reset_index(drop=True)
+    summary_df = pd.DataFrame(summary_records).sort_values(by="pr_auc", ascending=False).reset_index(drop=True)
     return trained_pipelines, summary_df
 
 
