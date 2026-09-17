@@ -1,0 +1,11 @@
+bank_id,bank_code,bank_name,hq
+BANK001,HDFC,HDFC Bank,Mumbai
+BANK002,SBI,State Bank of India,Mumbai
+BANK003,ICICI,ICICI Bank,Mumbai
+BANK004,PNB,Punjab National Bank,New Delhi
+BANK005,AXIS,Axis Bank,Mumbai
+BANK006,BOB,Bank of Baroda,Vadodara
+BANK007,KOTAK,Kotak Mahindra Bank,Mumbai
+BANK008,CANARA,Canara Bank,Bengaluru
+BANK009,UBI,Union Bank of India,Mumbai
+BANK010,INDUS,IndusInd Bank,Pune
