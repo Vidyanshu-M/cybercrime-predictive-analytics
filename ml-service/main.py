@@ -14,18 +14,10 @@ app = FastAPI(
 # Global predictor instance placeholder
 predictor = None
 MODEL_PATH = os.getenv("MODEL_PATH", "models/cybercrime_model.joblib")
+MODEL_VERSION = os.getenv("MODEL_VERSION", "xgb-v1")
 
 
-class IncidentPayload(BaseModel):
-    """Schema for incoming prediction payload."""
-    features: Dict[str, Any]
-
-
-class PredictionResponse(BaseModel):
-    """Schema for prediction response."""
-    prediction: Any
-    probabilities: Union[List[float], None] = None
-    status: str = "success"
+from src.schemas import MLPredictRequest, MLPredictResponse
 
 
 @app.on_event("startup")
@@ -49,27 +41,53 @@ def health_check():
     return {
         "status": "healthy",
         "service": "Cybercrime Predictive Analytics ML Service",
-        "model_loaded": predictor is not None
+        "model_loaded": predictor is not None,
+        "modelVersion": MODEL_VERSION
     }
 
 
-@app.post("/predict", response_model=PredictionResponse)
-def predict_incident(payload: IncidentPayload):
-    """Predict cybercrime incident classification/risk."""
+@app.post("/predict", response_model=MLPredictResponse, response_model_exclude_none=True)
+def predict_incident(payload: MLPredictRequest):
+    """Predict cybercrime incident risk based on ATM telemetry data."""
     if predictor is None:
-        raise HTTPException(status_code=503, detail="Model is not loaded. Train or provide a valid model artifact.")
+        raise HTTPException(
+            status_code=503, 
+            detail="Model is not loaded. Train or provide a valid model artifact."
+        )
     try:
-        pred = predictor.predict([payload.features])[0]
-        proba = None
-        try:
-            proba_arr = predictor.predict_proba([payload.features])[0]
-            proba = proba_arr.tolist()
-        except Exception:
-            pass
+        features_dict = payload.model_dump()
+        extra = features_dict.pop("extra_features", None)
+        if extra:
+            features_dict.update(extra)
 
-        return PredictionResponse(
-            prediction=int(pred) if hasattr(pred, "item") else pred,
-            probabilities=proba
+        pred = predictor.predict([features_dict])[0]
+        probability = 0.0
+
+        try:
+            proba_arr = predictor.predict_proba([features_dict])[0]
+            if len(proba_arr) > 1:
+                probability = round(float(proba_arr[1]), 2)
+            else:
+                probability = round(float(proba_arr[0]), 2)
+        except Exception:
+            probability = 1.0 if pred == 1 else 0.0
+
+        risk_score = int(round(probability * 100))
+        if risk_score >= 80:
+            risk_level = "CRITICAL"
+        elif risk_score >= 60:
+            risk_level = "HIGH"
+        elif risk_score >= 30:
+            risk_level = "MEDIUM"
+        else:
+            risk_level = "LOW"
+
+        return MLPredictResponse(
+            probability=probability,
+            riskScore=risk_score,
+            riskLevel=risk_level,
+            modelVersion=MODEL_VERSION,
+            atmId=payload.atmId
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Prediction error: {str(e)}")
