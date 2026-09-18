@@ -2,8 +2,10 @@
   "model_name": "cybercrime_fraud_predictor",
   "model_type": "XGBoost",
   "model_version": "xgb-v1",
+  "modelVersion": "xgb-v1",
   "experiment": "Exp C",
   "prediction_window_hours": 3,
+  "predictionWindowMinutes": 180,
   "threshold": 0.5,
   "target": {
     "name": "target",

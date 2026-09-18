@@ -1,112 +1,217 @@
 import os
-import argparse
-from typing import Dict, Any, List, Union
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pathlib import Path
+
 import uvicorn
+from fastapi import FastAPI, HTTPException
+
+from src.predict import ModelPredictor
+from src.schemas import (
+    MLPredictRequest,
+    MLPredictResponse,
+    calculate_risk_level,
+)
+from src.startup_validation import validate_startup_artifacts
+
+
+BASE_DIR = Path(__file__).resolve().parent
+
+MODEL_PATH = Path(
+    os.getenv(
+        "MODEL_PATH",
+        str(BASE_DIR / "models" / "final" / "xgboost_fraud_predictor.joblib"),
+    )
+)
+
+MODEL_VERSION = os.getenv("MODEL_VERSION", "xgb-v1")
+
+PREDICTION_WINDOW_MINUTES = 180
+
+RISK_THRESHOLD = 0.50
+
+MODEL_FEATURES = [
+    "hour",
+    "day_of_week",
+    "is_weekend",
+    "complaints_last_1h",
+    "complaints_last_6h",
+    "complaints_last_24h",
+    "withdrawals_last_1h",
+    "withdrawals_last_6h",
+    "withdrawals_last_24h",
+    "withdrawal_count",
+    "total_withdrawal_amount",
+    "average_withdrawal",
+    "unique_accounts",
+    "transaction_velocity",
+    "complaints_1km",
+    "complaints_3km",
+    "fraud_events_1km",
+    "fraud_events_3km",
+    "distance_from_recent_fraud",
+    "historical_fraud_count",
+    "historical_hotspot_score",
+]
+
 
 app = FastAPI(
     title="Cybercrime Predictive Analytics ML Service",
-    description="REST API for model inference, cybercrime risk prediction, and explainability.",
-    version="1.0.0"
+    description=(
+        "ML inference service for cybercrime and ATM fraud "
+        "risk prediction using the frozen xgb-v1 model."
+    ),
+    version="1.0.0",
 )
 
-# Global predictor instance placeholder
-predictor = None
-MODEL_PATH = os.getenv("MODEL_PATH", "models/cybercrime_model.joblib")
-MODEL_VERSION = os.getenv("MODEL_VERSION", "xgb-v1")
 
-
-from src.schemas import MLPredictRequest, MLPredictResponse, calculate_risk_level
+predictor: ModelPredictor | None = None
 
 
 @app.on_event("startup")
-def load_artifacts():
-    """Load model artifact on service startup if present."""
+def load_artifacts() -> None:
+    """Validate and load production ML artifacts when the service starts."""
+
     global predictor
-    if os.path.exists(MODEL_PATH):
-        try:
-            from src.predict import ModelPredictor
-            predictor = ModelPredictor(MODEL_PATH)
-            print(f"Loaded model from {MODEL_PATH}")
-        except Exception as e:
-            print(f"Failed to load model on startup: {e}")
-    else:
-        print(f"Warning: Model not found at {MODEL_PATH}. Training required.")
+
+    print("=" * 80, flush=True)
+    print("CYBERCRIME ML SERVICE STARTUP", flush=True)
+    print("=" * 80, flush=True)
+
+    print(f"Model path    : {MODEL_PATH}", flush=True)
+    print(f"Model version : {MODEL_VERSION}", flush=True)
+
+    try:
+        validation = validate_startup_artifacts(
+            BASE_DIR,
+            MODEL_FEATURES,
+        )
+
+        print("Startup validation: PASS", flush=True)
+        print(
+            f"Features      : "
+            f"{validation['feature_count']}",
+            flush=True,
+        )
+        print(
+            f"Threshold     : "
+            f"{validation['threshold']}",
+            flush=True,
+        )
+        print(
+            f"Window        : "
+            f"{validation['prediction_window_minutes']} minutes",
+            flush=True,
+        )
+
+        predictor = ModelPredictor(str(MODEL_PATH))
+
+        print("Model loaded successfully.", flush=True)
+        print("Service readiness: PASS", flush=True)
+
+    except Exception as exc:
+        predictor = None
+
+        print("STARTUP VALIDATION FAILED", flush=True)
+        print(f"Error: {exc}", flush=True)
+
+    print("=" * 80, flush=True)
 
 
 @app.get("/")
-def health_check():
-    """Service health and status endpoint."""
+def root():
+    """Basic service information."""
+
     return {
-        "status": "healthy",
         "service": "Cybercrime Predictive Analytics ML Service",
-        "model_loaded": predictor is not None,
-        "modelVersion": MODEL_VERSION
+        "status": "running",
+        "modelVersion": MODEL_VERSION,
+        "modelLoaded": predictor is not None,
     }
 
 
-@app.post("/predict", response_model=MLPredictResponse, response_model_exclude_none=True)
-def predict_incident(payload: MLPredictRequest):
-    """Predict cybercrime incident risk based on ATM telemetry data."""
+@app.get("/health")
+def health():
+    """Health/readiness endpoint."""
+
     if predictor is None:
         raise HTTPException(
-            status_code=503, 
-            detail="Model is not loaded. Train or provide a valid model artifact."
+            status_code=503,
+            detail="ML model is not loaded.",
         )
+
+    return {
+        "status": "healthy",
+        "service": "Cybercrime Predictive Analytics ML Service",
+        "modelLoaded": True,
+        "modelVersion": MODEL_VERSION,
+    }
+
+
+@app.post(
+    "/predict",
+    response_model=MLPredictResponse,
+)
+def predict(payload: MLPredictRequest):
+    """Generate an ATM fraud-risk prediction."""
+
+    if predictor is None:
+        raise HTTPException(
+            status_code=503,
+            detail="ML model is not loaded.",
+        )
+
     try:
-        features_dict = payload.model_dump()
-        extra = features_dict.pop("extra_features", None)
-        if extra:
-            features_dict.update(extra)
+        payload_dict = payload.model_dump()
 
-        pred = predictor.predict([features_dict])[0]
-        probability = 0.0
+        atm_id = payload_dict.pop("atmId")
 
-        try:
-            proba_arr = predictor.predict_proba([features_dict])[0]
-            if len(proba_arr) > 1:
-                probability = round(float(proba_arr[1]), 2)
-            else:
-                probability = round(float(proba_arr[0]), 2)
-        except Exception:
-            probability = 1.0 if pred == 1 else 0.0
+        features = {
+            feature: payload_dict[feature]
+            for feature in MODEL_FEATURES
+        }
+
+        probability_array = predictor.predict_proba([features])
+
+        if probability_array.shape[1] < 2:
+            raise RuntimeError(
+                "Model does not provide binary class probabilities."
+            )
+
+        probability = float(probability_array[0][1])
+
+        predicted_class = int(
+            probability >= RISK_THRESHOLD
+        )
 
         risk_score = int(round(probability * 100))
+
         risk_level = calculate_risk_level(risk_score)
 
         return MLPredictResponse(
-            probability=probability,
+            probability=round(probability, 6),
             riskScore=risk_score,
             riskLevel=risk_level,
             modelVersion=MODEL_VERSION,
-            atmId=payload.atmId
+            predictionWindowMinutes=PREDICTION_WINDOW_MINUTES,
+            atmId=atm_id,
         )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Prediction error: {str(e)}")
 
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Missing model feature: {exc}",
+        ) from exc
 
-def run_training_pipeline(args):
-    """Execute training workflow from CLI."""
-    print("Running ML training pipeline...")
-    # Training workflow logic can be customized with data paths
-    print("Finished training.")
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Cybercrime ML Service CLI")
-    parser.add_argument("--serve", action="store_true", help="Start the FastAPI API server")
-    parser.add_argument("--train", action="store_true", help="Run model training pipeline")
-    parser.add_argument("--port", type=int, default=8000, help="Port for API server")
-    parser.add_argument("--host", type=str, default="0.0.0.0", help="Host for API server")
-
-    args = parser.parse_args()
-
-    if args.train:
-        run_training_pipeline(args)
-    elif args.serve or not any(vars(args).values()):
-        uvicorn.run("main:app", host=args.host, port=args.port, reload=True)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Prediction error: {str(exc)}",
+        ) from exc
 
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+    )

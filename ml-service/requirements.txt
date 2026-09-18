@@ -9,3 +9,4 @@ pydantic
 matplotlib
 seaborn
 jupyter
+requests

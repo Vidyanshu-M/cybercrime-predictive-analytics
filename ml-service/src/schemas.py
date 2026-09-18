@@ -1,140 +1,136 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any, List, Union, Literal
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class MLPredictRequest(BaseModel):
-    """Input contract schema for ML prediction requests.
-    
-    Baseline contract for cybercrime / ATM fraud risk scoring.
-    Note: Schema will be expanded during Phase 4 (Feature Engineering).
     """
-    atmId: str = Field(
-        ..., 
-        description="Unique ATM identifier", 
-        examples=["ATM1023"]
-    )
-    hour: int = Field(
-        ..., 
-        ge=0, 
-        le=23, 
-        description="Hour of day (0-23)", 
-        examples=[20]
-    )
-    complaints24h: int = Field(
-        ..., 
-        ge=0, 
-        description="Number of incident complaints reported in the last 24 hours", 
-        examples=[17]
-    )
-    withdrawals6h: int = Field(
-        ..., 
-        ge=0, 
-        description="Total withdrawal transactions in the last 6 hours", 
-        examples=[8]
-    )
-    nearbyFraud: int = Field(
-        ..., 
-        ge=0, 
-        description="Number of reported fraud incidents in the surrounding radius", 
-        examples=[5]
-    )
-    distance: float = Field(
-        ..., 
-        ge=0.0, 
-        description="Distance metric (e.g., km to nearest incident hotspot or police station)", 
-        examples=[0.8]
-    )
-    extra_features: Optional[Dict[str, Any]] = Field(
-        default=None,
-        description="Optional additional features for forward compatibility during Phase 4 feature engineering",
-        examples=[{"dayOfWeek": 5}]
-    )
+    Production input contract for the xgb-v1 cybercrime risk model.
 
-    class Config:
-        json_schema_extra = {
+    The model expects exactly 21 engineered features.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
             "example": {
                 "atmId": "ATM1023",
                 "hour": 20,
-                "complaints24h": 17,
-                "withdrawals6h": 8,
-                "nearbyFraud": 5,
-                "distance": 0.8
+                "day_of_week": 4,
+                "is_weekend": 0,
+                "complaints_last_1h": 3,
+                "complaints_last_6h": 8,
+                "complaints_last_24h": 17,
+                "withdrawals_last_1h": 5,
+                "withdrawals_last_6h": 8,
+                "withdrawals_last_24h": 24,
+                "withdrawal_count": 5,
+                "total_withdrawal_amount": 12500.0,
+                "average_withdrawal": 2500.0,
+                "unique_accounts": 4,
+                "transaction_velocity": 5.0,
+                "complaints_1km": 4,
+                "complaints_3km": 12,
+                "fraud_events_1km": 2,
+                "fraud_events_3km": 5,
+                "distance_from_recent_fraud": 0.8,
+                "historical_fraud_count": 15,
+                "historical_hotspot_score": 0.72
             }
         }
+    )
 
+    # Application-level identifier.
+    # This is NOT passed to the ML model.
+    atmId: str = Field(
+        ...,
+        min_length=1,
+        description="Unique ATM identifier"
+    )
+
+    hour: int = Field(..., ge=0, le=23)
+    day_of_week: int = Field(..., ge=0, le=6)
+    is_weekend: int = Field(..., ge=0, le=1)
+
+    complaints_last_1h: int = Field(..., ge=0)
+    complaints_last_6h: int = Field(..., ge=0)
+    complaints_last_24h: int = Field(..., ge=0)
+
+    withdrawals_last_1h: int = Field(..., ge=0)
+    withdrawals_last_6h: int = Field(..., ge=0)
+    withdrawals_last_24h: int = Field(..., ge=0)
+
+    withdrawal_count: int = Field(..., ge=0)
+    total_withdrawal_amount: float = Field(..., ge=0.0)
+    average_withdrawal: float = Field(..., ge=0.0)
+    unique_accounts: int = Field(..., ge=0)
+    transaction_velocity: float = Field(..., ge=0.0)
+
+    complaints_1km: int = Field(..., ge=0)
+    complaints_3km: int = Field(..., ge=0)
+
+    fraud_events_1km: int = Field(..., ge=0)
+    fraud_events_3km: int = Field(..., ge=0)
+
+    distance_from_recent_fraud: float = Field(..., ge=0.0)
+    historical_fraud_count: int = Field(..., ge=0)
+    historical_hotspot_score: float = Field(..., ge=0.0)
 
 
 class MLPredictResponse(BaseModel):
-    """Output contract schema returned by the ML prediction service.
+    """Prediction returned by the ML service."""
 
-    Fields:
-    - probability: Model's predicted probability (0.0 - 1.0)
-    - riskScore: 0–100 prototype score
-    - riskLevel: LOW / MEDIUM / HIGH / CRITICAL
-    - modelVersion: Which trained model produced the prediction
-    """
     probability: float = Field(
         ...,
         ge=0.0,
         le=1.0,
-        description="Model's predicted probability [0.0 - 1.0]",
-        examples=[0.91]
+        description="Predicted probability of elevated fraud activity"
     )
+
     riskScore: int = Field(
         ...,
         ge=0,
         le=100,
-        description="0–100 prototype risk score",
-        examples=[91]
+        description="Prototype risk score from 0 to 100"
     )
-    riskLevel: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = Field(
+
+    riskLevel: Literal[
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+    ]
+
+    modelVersion: str
+
+    predictionWindowMinutes: int = Field(
         ...,
-        description="Risk tier: LOW / MEDIUM / HIGH / CRITICAL",
-        examples=["CRITICAL"]
-    )
-    modelVersion: str = Field(
-        ...,
-        description="Identifier of the model producing the prediction",
-        examples=["xgb-v1"]
-    )
-    atmId: Optional[str] = Field(
-        default=None,
-        description="Associated ATM identifier from the request",
-        examples=["ATM1023"]
+        ge=1,
+        description="Prediction horizon in minutes"
     )
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "probability": 0.91,
-                "riskScore": 91,
-                "riskLevel": "CRITICAL",
-                "modelVersion": "xgb-v1"
-            }
-        }
+    atmId: str
 
 
-def calculate_risk_level(risk_score: int) -> Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
-    """Map a 0-100 risk score to its corresponding risk tier.
-
-    Prototype Thresholds (Hackathon Prototype only, not official operational thresholds):
-    - 0–29   : LOW
-    - 30–59  : MEDIUM
-    - 60–79  : HIGH
-    - 80–100 : CRITICAL
-
-    Args:
-        risk_score (int): Scaled risk score between 0 and 100.
-
-    Returns:
-        Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]: The evaluated risk level.
+def calculate_risk_level(
+    risk_score: int
+) -> Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
     """
+    Prototype risk thresholds.
+
+    0-29   LOW
+    30-59  MEDIUM
+    60-79  HIGH
+    80-100 CRITICAL
+    """
+
     if risk_score >= 80:
         return "CRITICAL"
-    elif risk_score >= 60:
-        return "HIGH"
-    elif risk_score >= 30:
-        return "MEDIUM"
-    else:
-        return "LOW"
 
+    if risk_score >= 60:
+        return "HIGH"
+
+    if risk_score >= 30:
+        return "MEDIUM"
+
+    return "LOW"
