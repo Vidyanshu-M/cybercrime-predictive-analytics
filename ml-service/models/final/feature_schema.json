@@ -1,0 +1,26 @@
+{
+  "feature_count": 21,
+  "features": [
+    "hour",
+    "day_of_week",
+    "is_weekend",
+    "complaints_last_1h",
+    "complaints_last_6h",
+    "complaints_last_24h",
+    "withdrawals_last_1h",
+    "withdrawals_last_6h",
+    "withdrawals_last_24h",
+    "withdrawal_count",
+    "total_withdrawal_amount",
+    "average_withdrawal",
+    "unique_accounts",
+    "transaction_velocity",
+    "complaints_1km",
+    "complaints_3km",
+    "fraud_events_1km",
+    "fraud_events_3km",
+    "distance_from_recent_fraud",
+    "historical_fraud_count",
+    "historical_hotspot_score"
+  ]
+}

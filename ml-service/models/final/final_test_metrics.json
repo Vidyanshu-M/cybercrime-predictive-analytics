@@ -1,0 +1,64 @@
+{
+  "model_name": "XGBoost Exp C (Primary Model)",
+  "selected_configuration": {
+    "n_estimators": 400,
+    "max_depth": 8,
+    "learning_rate": 0.05,
+    "tree_method": "hist",
+    "eval_metric": "logloss",
+    "random_state": 42
+  },
+  "operating_threshold": 0.5,
+  "features_count": 21,
+  "features_list": [
+    "hour",
+    "day_of_week",
+    "is_weekend",
+    "complaints_last_1h",
+    "complaints_last_6h",
+    "complaints_last_24h",
+    "withdrawals_last_1h",
+    "withdrawals_last_6h",
+    "withdrawals_last_24h",
+    "withdrawal_count",
+    "total_withdrawal_amount",
+    "average_withdrawal",
+    "unique_accounts",
+    "transaction_velocity",
+    "complaints_1km",
+    "complaints_3km",
+    "fraud_events_1km",
+    "fraud_events_3km",
+    "distance_from_recent_fraud",
+    "historical_fraud_count",
+    "historical_hotspot_score"
+  ],
+  "test_dataset_summary": {
+    "total_rows": 4500,
+    "positive_cases": 188,
+    "negative_cases": 4312,
+    "positive_rate_percent": 4.18,
+    "start_time": "2026-07-25 12:42:59",
+    "end_time": "2026-08-31 23:24:50"
+  },
+  "metrics": {
+    "precision": 0.8632,
+    "recall": 0.8723,
+    "f1_score": 0.8677,
+    "roc_auc": 0.9977,
+    "pr_auc": 0.953,
+    "accuracy": 0.9889
+  },
+  "confusion_matrix": {
+    "true_negatives": 4286,
+    "false_positives": 26,
+    "false_negatives": 24,
+    "true_positives": 164
+  },
+  "data_isolation": {
+    "test_set_used_only_for_final_evaluation": true,
+    "no_training_performed_on_test_data": true,
+    "no_hyperparameter_tuning_performed_on_test_data": true,
+    "status": "PASS"
+  }
+}
