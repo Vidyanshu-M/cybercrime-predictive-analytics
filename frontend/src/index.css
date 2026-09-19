@@ -3,54 +3,49 @@
 @tailwind utilities;
 
 /* ====================================================
-   CYBERTRACE MULTI-THEME ENGINE
-   1. Dark Mode (.dark): Cyber Midnight Navy & Neon Cyan
-   2. Night Mode (.night): Pitch OLED Black & Eye Saver Amber
-   3. Light Mode (.light): Halka Pink & Eye Resolution Comfort
+   CYBERTRACE MULTI-THEME ENGINE (ULTRA-CLEAN SEAMLESS LOOK)
+   1. Light Mode (.light): Soft Light White-Pink (DEFAULT)
+   2. Dark Mode (.dark): Cyber Midnight Navy & Neon Cyan
+   3. Night Mode (.night): Pitch OLED Black & Warm Amber
    ==================================================== */
 
 @layer base {
   body {
-    @apply min-h-screen font-sans transition-colors duration-300;
+    @apply min-h-screen font-sans transition-colors duration-200;
   }
 }
 
 /* ---------------- BODY & BACKGROUNDS ---------------- */
 
-/* DARK MODE: Cyber Midnight Navy & Multi-Point Ambient Mesh */
+/* LIGHT MODE: Soft Light White-Pink (DEFAULT) */
+html.light body,
+html:not(.dark):not(.night) body {
+  background-color: #FFF7F9;
+  color: #1E293B;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(244, 114, 182, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%),
+    linear-gradient(135deg, #FFF7F9 0%, #FFF0F5 50%, #FDF2F8 100%);
+  background-attachment: fixed;
+}
+
+/* DARK MODE: Cyber Midnight Navy */
 html.dark body {
   background-color: #070A12;
   color: #F1F5F9;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.06) 0px, transparent 60%),
-    radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.07) 0px, transparent 50%),
-    linear-gradient(180deg, #070A12 0%, #0B0F1B 50%, #060910 100%);
+    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.05) 0px, transparent 50%),
+    linear-gradient(180deg, #070A12 0%, #0B0F1B 100%);
   background-attachment: fixed;
 }
 
-/* NIGHT MODE: Warm Pitch OLED & Anti-Glare Eye Saver Amber */
+/* NIGHT MODE: OLED Black & Warm Amber */
 html.night body {
-  background-color: #09090C;
+  background-color: #050507;
   color: #E6E4DD;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(217, 119, 6, 0.06) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(244, 63, 94, 0.05) 0px, transparent 60%),
-    radial-gradient(at 100% 100%, rgba(251, 146, 60, 0.06) 0px, transparent 50%),
-    linear-gradient(180deg, #09090C 0%, #0E0E14 50%, #070709 100%);
-  background-attachment: fixed;
-}
-
-/* LIGHT MODE: Halka Pink & Soft Rose */
-html.light body {
-  background-color: #FFF0F4;
-  color: #1E1926;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(244, 114, 182, 0.18) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(217, 70, 239, 0.12) 0px, transparent 50%),
-    linear-gradient(135deg, #FFF0F5 0%, #FFF5F8 50%, #FDF2F8 100%);
+    radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.04) 0px, transparent 50%),
+    linear-gradient(180deg, #050507 0%, #0B0B0F 100%);
   background-attachment: fixed;
 }
 
@@ -66,121 +61,250 @@ html.dark ::-webkit-scrollbar-thumb { background: #1A263D; border-radius: 4px; }
 html.dark ::-webkit-scrollbar-thumb:hover { background: #38BDF8; }
 
 /* Night */
-html.night ::-webkit-scrollbar-track { background: #09090C; }
+html.night ::-webkit-scrollbar-track { background: #050507; }
 html.night ::-webkit-scrollbar-thumb { background: #1F1F2C; border-radius: 4px; }
 html.night ::-webkit-scrollbar-thumb:hover { background: #F59E0B; }
 
-/* Light (Halka Pink & Soft Rose) */
-html.light ::-webkit-scrollbar-track { background: #FCE7F3; }
-html.light ::-webkit-scrollbar-thumb { background: #F472B6; border-radius: 4px; }
-html.light ::-webkit-scrollbar-thumb:hover { background: #DB2777; }
+/* Light Mode (Soft Rose) */
+html.light ::-webkit-scrollbar-track,
+html:not(.dark):not(.night) ::-webkit-scrollbar-track { background: #FFF0F5; }
+html.light ::-webkit-scrollbar-thumb,
+html:not(.dark):not(.night) ::-webkit-scrollbar-thumb { background: #F472B6; border-radius: 4px; }
+html.light ::-webkit-scrollbar-thumb:hover,
+html:not(.dark):not(.night) ::-webkit-scrollbar-thumb:hover { background: #DB2777; }
 
 
-/* ---------------- GLASSMORPHISM PANELS PER THEME ---------------- */
+/* ---------------- GLASSMORPHISM & CARDS PER THEME ---------------- */
 
-/* DARK MODE PANELS */
+/* LIGHT MODE PANELS (Pure White Cards with Soft Pink Borders) */
+html.light .glass-panel,
+html:not(.dark):not(.night) .glass-panel {
+  background: #FFFFFF;
+  border: 1px solid #FCE7F3;
+  box-shadow: 0 4px 20px -2px rgba(244, 114, 182, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+html.light .glass-panel-hover:hover,
+html:not(.dark):not(.night) .glass-panel-hover:hover {
+  background: #FFF0F5;
+  border-color: #F472B6;
+  box-shadow: 0 8px 25px -3px rgba(244, 114, 182, 0.15);
+}
+html.light .glass-card,
+html:not(.dark):not(.night) .glass-card {
+  background: #FFF0F5;
+  border: 1px solid #FCE7F3;
+}
+
+/* DARK MODE PANELS - Seamless, Deep, No Harsh Heavy Borders */
 html.dark .glass-panel {
-  background: rgba(13, 19, 33, 0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(56, 189, 248, 0.15);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 0 15px -3px rgba(56, 189, 248, 0.08);
+  background: rgba(13, 19, 33, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
 }
 html.dark .glass-panel-hover:hover {
-  background: rgba(18, 27, 46, 0.85);
-  border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), 0 0 20px -2px rgba(56, 189, 248, 0.18);
+  background: rgba(18, 27, 46, 0.95);
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 8px 25px -3px rgba(0, 0, 0, 0.45);
 }
 html.dark .glass-card {
-  background: rgba(16, 24, 42, 0.65);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(18, 26, 44, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* NIGHT MODE PANELS (OLED Warm Eye-Saver Amber) */
+/* NIGHT MODE PANELS - Seamless OLED Pitch Black with Soft Amber Accents */
 html.night .glass-panel {
-  background: rgba(12, 12, 17, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(245, 158, 11, 0.16);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 15px -3px rgba(245, 158, 11, 0.08);
+  background: rgba(12, 12, 17, 0.92);
+  border: 1px solid rgba(245, 158, 11, 0.1);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
 }
 html.night .glass-panel-hover:hover {
-  background: rgba(18, 18, 25, 0.92);
-  border-color: rgba(245, 158, 11, 0.38);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.7), 0 0 20px -2px rgba(245, 158, 11, 0.18);
+  background: rgba(18, 18, 25, 0.95);
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 8px 25px -3px rgba(0, 0, 0, 0.6);
 }
 html.night .glass-card {
   background: rgba(18, 18, 25, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(245, 158, 11, 0.12);
-}
-
-/* LIGHT MODE PANELS (Halka Pink Translucent & Soft Rose Borders) */
-html.light .glass-panel {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(244, 114, 182, 0.28);
-  box-shadow: 0 8px 30px -5px rgba(236, 72, 153, 0.07), 0 2px 8px rgba(0, 0, 0, 0.03);
-}
-html.light .glass-panel-hover:hover {
-  background: rgba(255, 243, 247, 0.95);
-  border-color: rgba(236, 72, 153, 0.45);
-  box-shadow: 0 12px 30px -5px rgba(236, 72, 153, 0.12), 0 0 15px -3px rgba(244, 114, 182, 0.18);
-}
-html.light .glass-card {
-  background: rgba(255, 240, 245, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(244, 114, 182, 0.22);
+  border: 1px solid rgba(245, 158, 11, 0.06);
 }
 
 
-/* ---------------- DARK MODE COMPONENT OVERRIDES ---------------- */
+/* ---------------- THEME-AWARE SECONDARY & CANCEL BUTTONS ---------------- */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+html.light .btn-secondary,
+html:not(.dark):not(.night) .btn-secondary {
+  background-color: #FCE7F3 !important;
+  color: #9D174D !important;
+  border: 1px solid #FBCFE8 !important;
+}
+html.light .btn-secondary:hover,
+html:not(.dark):not(.night) .btn-secondary:hover {
+  background-color: #F472B6 !important;
+  color: #FFFFFF !important;
+}
+
+html.dark .btn-secondary {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #E2E8F0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+html.dark .btn-secondary:hover {
+  background-color: rgba(51, 65, 85, 0.9) !important;
+  color: #FFFFFF !important;
+}
+
+html.night .btn-secondary {
+  background-color: rgba(24, 24, 32, 0.9) !important;
+  color: #E6E4DD !important;
+  border: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+html.night .btn-secondary:hover {
+  background-color: rgba(35, 35, 48, 0.95) !important;
+  color: #F59E0B !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+
+/* ---------------- PERFECT THEME-SCOPED HOVER ENGINE ---------------- */
+
+/* LIGHT MODE HOVERS: Soft Light White-Pink & Deep Rose Text */
+html.light tr:hover,
+html.light tr:hover td,
+html:not(.dark):not(.night) tr:hover,
+html:not(.dark):not(.night) tr:hover td,
+html.light .hover\:bg-rose-50:hover,
+html.light .hover\:bg-rose-50\/60:hover,
+html.light .hover\:bg-rose-100\/60:hover,
+html.light .hover\:bg-slate-800:hover,
+html.light .hover\:bg-slate-800\/60:hover,
+html.light .hover\:bg-slate-800\/80:hover,
+html.light .hover\:bg-cyber-800:hover,
+html.light .hover\:bg-cyber-800\/40:hover {
+  background-color: #FFF0F5 !important;
+  color: #BE185D !important;
+}
+
+/* DARK MODE HOVERS: Deep Midnight Navy & Cyan Text */
+html.dark tr:hover,
+html.dark tr:hover td,
+html.dark .glass-panel-hover:hover,
+html.dark .hover\:bg-rose-50:hover,
+html.dark .hover\:bg-rose-50\/60:hover,
+html.dark .hover\:bg-rose-100\/60:hover,
+html.dark .hover\:bg-slate-800:hover,
+html.dark .hover\:bg-slate-800\/60:hover,
+html.dark .hover\:bg-slate-800\/80:hover {
+  background-color: rgba(56, 189, 248, 0.12) !important;
+  color: #38BDF8 !important;
+}
+
+/* NIGHT MODE HOVERS: Pitch OLED Warm Eye-Care Amber Text */
+html.night tr:hover,
+html.night tr:hover td,
+html.night .glass-panel-hover:hover,
+html.night .hover\:bg-rose-50:hover,
+html.night .hover\:bg-rose-50\/60:hover,
+html.night .hover\:bg-rose-100\/60:hover,
+html.night .hover\:bg-slate-800:hover,
+html.night .hover\:bg-slate-800\/60:hover,
+html.night .hover\:bg-slate-800\/80:hover {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  color: #F59E0B !important;
+}
+
+
+/* ---------------- DARK & NIGHT MODE TEXT & BORDER VISIBILITY FIXES ---------------- */
+html.dark .text-slate-900,
+html.night .text-slate-900,
+html.dark .text-slate-800,
+html.night .text-slate-800 {
+  color: #F8FAFC !important;
+}
+
+html.dark .text-slate-700,
+html.night .text-slate-700 {
+  color: #E2E8F0 !important;
+}
+
+html.dark .text-slate-600,
+html.night .text-slate-600 {
+  color: #CBD5E1 !important;
+}
+
+html.dark .text-slate-500,
+html.night .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+/* Border overrides to prevent heavy cluttered borders in Dark & Night */
+html.dark .border-slate-800,
+html.dark .border-slate-800\/80,
+html.dark .border-slate-700 {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+html.night .border-slate-800,
+html.night .border-slate-800\/80,
+html.night .border-slate-700 {
+  border-color: rgba(245, 158, 11, 0.1) !important;
+}
+
+/* Safety background mapping for bg-slate-200, bg-slate-300, bg-slate-100 in Dark and Night modes */
+html.dark .bg-slate-200,
+html.dark .bg-slate-300,
+html.dark .bg-slate-100 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #E2E8F0 !important;
+}
+
+html.night .bg-slate-200,
+html.night .bg-slate-300,
+html.night .bg-slate-100 {
+  background-color: rgba(24, 24, 32, 0.9) !important;
+  color: #E6E4DD !important;
+  border: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+
 html.dark {
   color-scheme: dark;
 }
 
 html.dark .bg-cyber-950 {
-  background-color: rgba(7, 10, 18, 0.82) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: #070A12 !important;
 }
 
-html.dark .bg-cyber-900,
-html.dark .bg-cyber-900\/80,
-html.dark .bg-cyber-900\/60 {
-  background-color: rgba(11, 16, 28, 0.85) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+html.dark .bg-cyber-900 {
+  background-color: #0B101C !important;
 }
 
-html.dark .bg-cyber-850,
-html.dark .bg-cyber-850\/80 {
-  background-color: rgba(15, 22, 38, 0.85) !important;
+html.dark .bg-cyber-850 {
+  background-color: #0F1626 !important;
 }
 
 html.dark .bg-cyber-800 {
-  background-color: rgba(20, 30, 51, 0.85) !important;
+  background-color: #141E33 !important;
 }
 
 html.dark .bg-cyber-700 {
-  background-color: rgba(28, 42, 68, 0.85) !important;
-}
-
-html.dark .border-slate-800,
-html.dark .border-slate-800\/80 {
-  border-color: rgba(56, 189, 248, 0.14) !important;
+  background-color: #1C2A44 !important;
 }
 
 /* Input Fields in Dark Mode */
 html.dark input,
 html.dark select,
 html.dark textarea {
-  background-color: rgba(9, 14, 24, 0.85) !important;
+  background-color: #090E18 !important;
   color: #F1F5F9 !important;
   border-color: rgba(56, 189, 248, 0.25) !important;
 }
@@ -192,7 +316,7 @@ html.dark textarea:focus {
 }
 
 
-/* ---------------- NIGHT MODE WARM EYE-SAVER OVERRIDES ---------------- */
+/* ---------------- NIGHT MODE OVERRIDES ---------------- */
 html.night {
   color-scheme: dark;
 }
@@ -208,62 +332,38 @@ html.night .text-slate-300 {
 }
 
 html.night .text-slate-400 {
-  color: #9E9889 !important;
-}
-
-html.night .text-slate-500 {
-  color: #7D7769 !important;
-}
-
-html.night .border-slate-800,
-html.night .border-slate-800\/80 {
-  border-color: rgba(245, 158, 11, 0.18) !important;
+  color: #A8A29E !important;
 }
 
 html.night .bg-cyber-950 {
-  background-color: rgba(9, 9, 12, 0.88) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: #050507 !important;
 }
 
-html.night .bg-cyber-900,
-html.night .bg-cyber-900\/80,
-html.night .bg-cyber-900\/60 {
-  background-color: rgba(14, 14, 19, 0.88) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+html.night .bg-cyber-900 {
+  background-color: #0E0E14 !important;
 }
 
-html.night .bg-cyber-850,
-html.night .bg-cyber-850\/80 {
-  background-color: rgba(19, 19, 26, 0.88) !important;
+html.night .bg-cyber-850 {
+  background-color: #13131A !important;
 }
 
 html.night .bg-cyber-800 {
-  background-color: rgba(25, 25, 34, 0.88) !important;
+  background-color: #191922 !important;
 }
 
 html.night .bg-cyber-700 {
-  background-color: rgba(33, 33, 44, 0.88) !important;
+  background-color: #21212C !important;
 }
 
 html.night .text-cyber-accent {
   color: #F59E0B !important;
 }
 
-html.night .bg-cyber-accent\/15 {
-  background-color: rgba(245, 158, 11, 0.15) !important;
-}
-
-html.night .border-cyber-accent\/30 {
-  border-color: rgba(245, 158, 11, 0.3) !important;
-}
-
 /* Input Fields in Night Mode */
 html.night input,
 html.night select,
 html.night textarea {
-  background-color: rgba(11, 11, 15, 0.9) !important;
+  background-color: #0B0B0F !important;
   color: #E6E4DD !important;
   border-color: rgba(245, 158, 11, 0.25) !important;
 }
@@ -275,80 +375,152 @@ html.night textarea:focus {
 }
 
 
-/* ---------------- LIGHT MODE EYE RESOLUTION OVERRIDES ---------------- */
-html.light {
+/* ---------------- LIGHT MODE OVERRIDES (ULTRA CLEAN WHITE-PINK) ---------------- */
+html.light,
+html:not(.dark):not(.night) {
   color-scheme: light;
 }
 
-html.light .text-white {
-  color: #1E1926 !important;
+/* Typography in Light Mode */
+html.light .text-white,
+html:not(.dark):not(.night) .text-white {
+  color: #0F172A !important;
 }
 
 html.light .text-slate-100,
 html.light .text-slate-200,
-html.light .text-slate-300 {
-  color: #2D2438 !important;
+html:not(.dark):not(.night) .text-slate-100,
+html:not(.dark):not(.night) .text-slate-200 {
+  color: #1E293B !important;
 }
 
-html.light .text-slate-400 {
-  color: #5C526A !important;
+html.light .text-slate-300,
+html:not(.dark):not(.night) .text-slate-300 {
+  color: #334155 !important;
 }
 
-html.light .text-slate-500 {
-  color: #7B6E8B !important;
+html.light .text-slate-400,
+html:not(.dark):not(.night) .text-slate-400 {
+  color: #64748B !important;
+}
+
+html.light .text-slate-500,
+html:not(.dark):not(.night) .text-slate-500 {
+  color: #64748B !important;
 }
 
 html.light .border-slate-800,
-html.light .border-slate-800\/80 {
-  border-color: rgba(244, 114, 182, 0.25) !important;
+html.light .border-slate-800\/80,
+html.light .border-slate-700,
+html:not(.dark):not(.night) .border-slate-800,
+html:not(.dark):not(.night) .border-slate-800\/80,
+html:not(.dark):not(.night) .border-slate-700 {
+  border-color: #FCE7F3 !important;
 }
 
-html.light .bg-cyber-950 {
-  background-color: #FFF0F5 !important;
+/* Background Color Map for Light Mode - ELIMINATES BLACK SPOTS */
+html.light .bg-cyber-950,
+html:not(.dark):not(.night) .bg-cyber-950 {
+  background-color: #FFF7F9 !important;
 }
 
 html.light .bg-cyber-900,
 html.light .bg-cyber-900\/80,
-html.light .bg-cyber-900\/60 {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+html.light .bg-cyber-900\/60,
+html.light .bg-cyber-900\/95,
+html:not(.dark):not(.night) .bg-cyber-900,
+html:not(.dark):not(.night) .bg-cyber-900\/80,
+html:not(.dark):not(.night) .bg-cyber-900\/60,
+html:not(.dark):not(.night) .bg-cyber-900\/95 {
+  background-color: #FFFFFF !important;
 }
 
 html.light .bg-cyber-850,
-html.light .bg-cyber-850\/80 {
-  background-color: #FFE6EE !important;
+html.light .bg-cyber-850\/80,
+html:not(.dark):not(.night) .bg-cyber-850,
+html:not(.dark):not(.night) .bg-cyber-850\/80 {
+  background-color: #FFF0F5 !important;
 }
 
-html.light .bg-cyber-700 {
+html.light .bg-cyber-800,
+html:not(.dark):not(.night) .bg-cyber-800 {
   background-color: #FCE7F3 !important;
 }
 
-html.light .text-cyber-accent {
+html.light .bg-cyber-700,
+html.light .bg-cyber-700\/80,
+html:not(.dark):not(.night) .bg-cyber-700,
+html:not(.dark):not(.night) .bg-cyber-700\/80 {
+  background-color: #FCE7F3 !important;
+  color: #9D174D !important;
+}
+
+html.light .bg-slate-800,
+html.light .bg-slate-800\/60,
+html.light .bg-slate-800\/80,
+html:not(.dark):not(.night) .bg-slate-800,
+html:not(.dark):not(.night) .bg-slate-800\/60,
+html:not(.dark):not(.night) .bg-slate-800\/80 {
+  background-color: #FCE7F3 !important;
+  color: #9D174D !important;
+}
+
+html.light .text-cyber-accent,
+html:not(.dark):not(.night) .text-cyber-accent {
   color: #DB2777 !important;
 }
 
-html.light .bg-cyber-accent\/15 {
+html.light .bg-cyber-accent\/15,
+html:not(.dark):not(.night) .bg-cyber-accent\/15 {
   background-color: rgba(236, 72, 153, 0.12) !important;
 }
 
-html.light .border-cyber-accent\/30 {
+html.light .border-cyber-accent\/30,
+html.light .border-cyber-accent\/20,
+html:not(.dark):not(.night) .border-cyber-accent\/30,
+html:not(.dark):not(.night) .border-cyber-accent\/20 {
   border-color: rgba(236, 72, 153, 0.35) !important;
 }
 
 /* Input Fields in Light Mode */
 html.light input,
 html.light select,
-html.light textarea {
-  background-color: #FFF7F9 !important;
-  color: #1E1926 !important;
-  border-color: rgba(244, 114, 182, 0.35) !important;
+html.light textarea,
+html:not(.dark):not(.night) input,
+html:not(.dark):not(.night) select,
+html:not(.dark):not(.night) textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #FBCFE8 !important;
 }
 html.light input:focus,
 html.light select:focus,
-html.light textarea:focus {
+html.light textarea:focus,
+html:not(.dark):not(.night) input:focus,
+html:not(.dark):not(.night) select:focus,
+html:not(.dark):not(.night) textarea:focus {
   border-color: #EC4899 !important;
-  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.15) !important;
 }
 
+/* Select Option Dropdowns on Light Mode */
+html.light select option,
+html:not(.dark):not(.night) select option {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* Modal Backdrops per Theme */
+html.light .modal-backdrop,
+html:not(.dark):not(.night) .modal-backdrop {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+}
+html.dark .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+html.night .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+}
 
 /* ---------------- LEAFLET MAP STYLING PER THEME ---------------- */
 html.dark .leaflet-container {
@@ -356,11 +528,12 @@ html.dark .leaflet-container {
   font-family: 'Outfit', sans-serif !important;
 }
 html.night .leaflet-container {
-  background-color: #09090C !important;
+  background-color: #050507 !important;
   font-family: 'Outfit', sans-serif !important;
 }
-html.light .leaflet-container {
-  background-color: #FFF0F5 !important;
+html.light .leaflet-container,
+html:not(.dark):not(.night) .leaflet-container {
+  background-color: #FFF7F9 !important;
   font-family: 'Outfit', sans-serif !important;
 }
 
@@ -368,7 +541,6 @@ html.dark .leaflet-popup-content-wrapper, html.dark .leaflet-popup-tip {
   background: #0D1321 !important;
   color: #F1F5F9 !important;
   border: 1px solid rgba(56, 189, 248, 0.3) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
   border-radius: 12px !important;
 }
 
@@ -376,25 +548,22 @@ html.night .leaflet-popup-content-wrapper, html.night .leaflet-popup-tip {
   background: #0C0C11 !important;
   color: #E6E4DD !important;
   border: 1px solid rgba(245, 158, 11, 0.3) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8) !important;
   border-radius: 12px !important;
 }
 
-html.light .leaflet-popup-content-wrapper, html.light .leaflet-popup-tip {
+html.light .leaflet-popup-content-wrapper, html.light .leaflet-popup-tip,
+html:not(.dark):not(.night) .leaflet-popup-content-wrapper, html:not(.dark):not(.night) .leaflet-popup-tip {
   background: #FFFFFF !important;
-  color: #1E1926 !important;
-  border: 1px solid rgba(244, 114, 182, 0.4) !important;
-  box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.15) !important;
+  color: #0F172A !important;
+  border: 1px solid #FBCFE8 !important;
+  box-shadow: 0 8px 25px -4px rgba(236, 72, 153, 0.15) !important;
   border-radius: 12px !important;
 }
 
 html.dark .leaflet-container a.leaflet-popup-close-button { color: #94A3B8 !important; padding: 8px !important; }
 html.night .leaflet-container a.leaflet-popup-close-button { color: #9E9889 !important; padding: 8px !important; }
-html.light .leaflet-container a.leaflet-popup-close-button { color: #5C526A !important; padding: 8px !important; }
-
-html.dark .leaflet-container a.leaflet-popup-close-button:hover { color: #38BDF8 !important; }
-html.night .leaflet-container a.leaflet-popup-close-button:hover { color: #F59E0B !important; }
-html.light .leaflet-container a.leaflet-popup-close-button:hover { color: #DB2777 !important; }
+html.light .leaflet-container a.leaflet-popup-close-button,
+html:not(.dark):not(.night) .leaflet-container a.leaflet-popup-close-button { color: #64748B !important; padding: 8px !important; }
 
 /* ---------------- RISK MARKER PULSE ANIMATION ---------------- */
 @keyframes markerPulse {
@@ -404,7 +573,7 @@ html.light .leaflet-container a.leaflet-popup-close-button:hover { color: #DB277
   }
   70% {
     transform: scale(1.05);
-    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
   }
   100% {
     transform: scale(0.95);
@@ -416,4 +585,3 @@ html.light .leaflet-container a.leaflet-popup-close-button:hover { color: #DB277
   animation: markerPulse 1.8s infinite;
   border-radius: 50%;
 }
-

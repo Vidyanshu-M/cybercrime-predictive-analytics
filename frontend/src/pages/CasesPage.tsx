@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Case, CasePriority, CaseStatus } from '../types';
+import { Case, CasePriority } from '../types';
 import { caseService } from '../services/caseService';
 import { StatusBadge } from '../components/StatusBadge';
 import { Modal } from '../components/Modal';
-import { Briefcase, Plus, Search, FileText, ArrowRight, UserCheck, Shield } from 'lucide-react';
+import { Briefcase, Plus, Search, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const CasesPage: React.FC = () => {
@@ -69,18 +69,20 @@ export const CasesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white night:text-white flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-cyber-accent" />
             <span>Cybercrime Case Investigation Hub</span>
           </h2>
-          <p className="text-xs text-slate-400">Manage ongoing cyber fraud cases, linked NCRP complaints, and evidentiary artifacts.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Manage ongoing cyber fraud cases, linked NCRP complaints, and evidentiary artifacts.
+          </p>
         </div>
 
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyber-accent to-indigo-600 text-slate-950 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-cyber-accent/20 hover:opacity-95 transition-all"
+          className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyber-accent to-indigo-600 text-slate-950 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-cyber-accent/20 hover:opacity-95 transition-all shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>New Investigation Case</span>
@@ -96,14 +98,14 @@ export const CasesPage: React.FC = () => {
             placeholder="Search by case number, title, or district..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
           />
         </div>
       </div>
 
       {/* Cases Grid */}
       {loading ? (
-        <div className="py-20 text-center text-slate-400 text-xs">Loading cases...</div>
+        <div className="py-20 text-center text-slate-500 dark:text-slate-400 text-xs">Loading cases...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredCases.map((c) => (
@@ -119,20 +121,20 @@ export const CasesPage: React.FC = () => {
                 <StatusBadge status={c.status} />
               </div>
 
-              <h3 className="text-sm font-bold text-white group-hover:text-cyber-accent transition-colors">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white night:text-white group-hover:text-cyber-accent transition-colors">
                 {c.title}
               </h3>
 
-              <p className="text-xs text-slate-400 line-clamp-2">{c.summary}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{c.summary}</p>
 
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-300">
-                <div>Complaints: <strong className="text-white">{c.complaintCount}</strong></div>
-                <div>Transactions: <strong className="text-white">{c.transactionCount}</strong></div>
-                <div>Evidence Files: <strong className="text-white">{c.evidenceCount}</strong></div>
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-600 dark:text-slate-300">
+                <div>Complaints: <strong className="text-slate-900 dark:text-white">{c.complaintCount}</strong></div>
+                <div>Transactions: <strong className="text-slate-900 dark:text-white">{c.transactionCount}</strong></div>
+                <div>Evidence Files: <strong className="text-slate-900 dark:text-white">{c.evidenceCount}</strong></div>
               </div>
 
-              <div className="flex items-center justify-between pt-2 text-[10px] text-slate-400">
-                <span>Officer: <strong className="text-purple-400">{c.assignedOfficer}</strong></span>
+              <div className="flex items-center justify-between pt-2 text-[10px] text-slate-500 dark:text-slate-400">
+                <span>Officer: <strong className="text-purple-600 dark:text-purple-400">{c.assignedOfficer}</strong></span>
                 <span className="flex items-center gap-1 text-cyber-accent font-semibold">
                   <span>Inspect Case</span>
                   <ArrowRight className="w-3 h-3" />
@@ -152,7 +154,7 @@ export const CasesPage: React.FC = () => {
       >
         <form onSubmit={handleCreateCase} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Case Title / Incident Header
             </label>
             <input
@@ -161,19 +163,19 @@ export const CasesPage: React.FC = () => {
               placeholder="e.g. Connaught Place ATM Cash Out Syndicate"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Priority Level
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as CasePriority)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
               >
                 <option value="CRITICAL">CRITICAL</option>
                 <option value="HIGH">HIGH</option>
@@ -183,7 +185,7 @@ export const CasesPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 District Jurisdiction
               </label>
               <input
@@ -191,13 +193,13 @@ export const CasesPage: React.FC = () => {
                 required
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Case Brief / Summary
             </label>
             <textarea
@@ -206,21 +208,21 @@ export const CasesPage: React.FC = () => {
               placeholder="Summarize initial complaints and suspicious withdrawal patterns..."
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
             />
           </div>
 
-          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setCreateModalOpen(false)}
-              className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-cyber-accent text-slate-950 font-bold text-xs uppercase tracking-wider"
+              className="px-5 py-2 rounded-xl bg-cyber-accent text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md"
             >
               Create Case File
             </button>

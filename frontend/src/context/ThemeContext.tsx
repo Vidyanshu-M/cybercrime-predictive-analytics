@@ -29,7 +29,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove('dark', 'night', 'light');
-    root.classList.add(theme);
+    if (theme === 'night') {
+      root.classList.add('dark', 'night');
+    } else {
+      root.classList.add(theme);
+    }
   }, [theme]);
 
   return (

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, AlertStatus, RiskLevel } from '../types';
+import { Alert } from '../types';
 import { alertService } from '../services/alertService';
 import { RiskBadge } from '../components/RiskBadge';
 import { StatusBadge } from '../components/StatusBadge';
 import { Modal } from '../components/Modal';
-import { AlertTriangle, Filter, ArrowRight, UserCheck, CheckCircle, Search } from 'lucide-react';
+import { AlertTriangle, UserCheck, CheckCircle, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const AlertsPage: React.FC = () => {
@@ -76,13 +76,15 @@ export const AlertsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-rose-400" />
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white night:text-white flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-rose-500" />
             <span>Incident Alert Command Hub</span>
           </h2>
-          <p className="text-xs text-slate-400">Real-time alerts triggered by XGBoost fraud risk models & spatial cluster thresholds.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Real-time alerts triggered by XGBoost fraud risk models & spatial cluster thresholds.
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -102,7 +104,7 @@ export const AlertsPage: React.FC = () => {
             placeholder="Filter by district or ATM code..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
           />
         </div>
 
@@ -111,7 +113,7 @@ export const AlertsPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+            className="px-3 py-2 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
           >
             <option value="ALL">All Statuses</option>
             <option value="NEW">New Only</option>
@@ -123,7 +125,7 @@ export const AlertsPage: React.FC = () => {
           <select
             value={riskFilter}
             onChange={(e) => setRiskFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+            className="px-3 py-2 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
           >
             <option value="ALL">All Risk Levels</option>
             <option value="CRITICAL">Critical Only</option>
@@ -136,9 +138,9 @@ export const AlertsPage: React.FC = () => {
 
       {/* Alerts Grid */}
       {loading ? (
-        <div className="py-20 text-center text-slate-400 text-xs">Loading alerts...</div>
+        <div className="py-20 text-center text-slate-500 dark:text-slate-400 text-xs">Loading alerts...</div>
       ) : filteredAlerts.length === 0 ? (
-        <div className="glass-panel p-12 text-center text-slate-400 text-xs rounded-xl">
+        <div className="glass-panel p-12 text-center text-slate-500 dark:text-slate-400 text-xs rounded-xl">
           No alerts matching the selected filters.
         </div>
       ) : (
@@ -159,13 +161,13 @@ export const AlertsPage: React.FC = () => {
                 <RiskBadge level={alt.riskLevel} score={alt.riskScore} size="sm" />
               </div>
 
-              <h3 className="text-sm font-bold text-white group-hover:text-cyber-accent transition-colors">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white night:text-white group-hover:text-cyber-accent transition-colors">
                 {alt.message}
               </h3>
 
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-1">
-                <div>District: <strong className="text-slate-200">{alt.district}</strong></div>
-                <div>ATM Terminal: <strong className="text-slate-200">{alt.atmCode || 'N/A'}</strong></div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                <div>District: <strong className="text-slate-800 dark:text-slate-200">{alt.district}</strong></div>
+                <div>ATM Terminal: <strong className="text-slate-800 dark:text-slate-200">{alt.atmCode || 'N/A'}</strong></div>
                 {alt.assignedTo && (
                   <div className="col-span-2 text-cyber-accent font-medium">Assigned Officer: {alt.assignedTo}</div>
                 )}
@@ -181,7 +183,7 @@ export const AlertsPage: React.FC = () => {
                   {alt.status === 'NEW' && (
                     <button
                       onClick={(e) => handleAcknowledge(alt.id, e)}
-                      className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 text-xs font-semibold border border-purple-500/30 flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-300 hover:bg-purple-500/30 text-xs font-semibold border border-purple-500/30 flex items-center gap-1"
                     >
                       <CheckCircle className="w-3.5 h-3.5" />
                       <span>Acknowledge</span>
@@ -215,18 +217,18 @@ export const AlertsPage: React.FC = () => {
         maxWidth="md"
       >
         <form onSubmit={handleAssignSubmit} className="space-y-4">
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             Specify officer name and department responsible for investigating this spatial fraud alert.
           </p>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Select Officer Profile / Name
             </label>
             <select
               value={officerName}
               onChange={(e) => setOfficerName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-cyber-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyber-accent"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-cyber-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-cyber-accent"
             >
               <option value="None">None</option>
               <option value="Officer - I4C Lead">Officer - I4C Lead</option>
@@ -235,17 +237,17 @@ export const AlertsPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setAssignModalOpen(false)}
-              className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-cyber-accent text-slate-950 font-bold text-xs uppercase tracking-wider"
+              className="px-5 py-2 rounded-xl bg-cyber-accent text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md"
             >
               Confirm Assignment
             </button>

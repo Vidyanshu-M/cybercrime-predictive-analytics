@@ -12,6 +12,8 @@ export const MainLayout: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [activeToast, setActiveToast] = useState<Alert | null>(null);
   const [pendingAlertCount, setPendingAlertCount] = useState<number>(0);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,15 +47,20 @@ export const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-cyber-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-cyber-950 text-slate-900 dark:text-slate-100 night:text-slate-100 transition-colors">
       <Navbar 
         user={user} 
         onLogout={handleLogout} 
         pendingAlertCount={pendingAlertCount} 
+        onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
       />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar userRole={user?.role} />
-        <main className="flex-1 p-6 overflow-y-auto max-w-7xl mx-auto w-full">
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar 
+          userRole={user?.role} 
+          mobileOpen={mobileSidebarOpen}
+          onCloseMobile={() => setMobileSidebarOpen(false)}
+        />
+        <main className="flex-1 p-3 sm:p-6 overflow-y-auto max-w-7xl mx-auto w-full">
           <Outlet />
         </main>
       </div>

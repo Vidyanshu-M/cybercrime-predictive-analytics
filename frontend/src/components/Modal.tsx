@@ -44,20 +44,22 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className={`w-full ${getMaxWidthClass()} glass-panel bg-cyber-900/95 border-cyber-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+      <div className={`w-full ${getMaxWidthClass()} glass-panel bg-white dark:bg-cyber-900 night:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80">
-          <h3 className="text-lg font-bold text-white tracking-wide">{title}</h3>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800/80">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white night:text-white tracking-wide">
+            {title}
+          </h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-rose-100/60 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
         {/* Body */}
-        <div className="p-6 overflow-y-auto space-y-4">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4">
           {children}
         </div>
       </div>
