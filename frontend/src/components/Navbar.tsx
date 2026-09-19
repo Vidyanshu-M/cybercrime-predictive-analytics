@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Shield, Bell, LogOut, Menu, ArrowRight } from 'lucide-react';
+import { Shield, Bell, LogOut, Menu, ArrowRight, MoreVertical, Sun, Moon, Eye, Settings, User as UserIcon } from 'lucide-react';
 import { User, Alert } from '../types';
 import { websocketService } from '../services/websocketService';
 import { alertService } from '../services/alertService';
-import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
@@ -19,13 +19,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   pendingAlertCount,
   onToggleMobileSidebar 
 }) => {
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [showThreeDotsMenu, setShowThreeDotsMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Alert[]>([]);
   const [demoTriggered, setDemoTriggered] = useState(false);
   
   const notifRef = useRef<HTMLDivElement>(null);
-  const userRef = useRef<HTMLDivElement>(null);
+  const threeDotsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,8 +41,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
       }
-      if (userRef.current && !userRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false);
+      if (threeDotsRef.current && !threeDotsRef.current.contains(event.target as Node)) {
+        setShowThreeDotsMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -106,9 +107,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Theme Switcher */}
-        <ThemeToggle />
-
         {/* Notification Bell Dropdown */}
         <div className="relative" ref={notifRef}>
           <button 
@@ -125,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 glass-panel rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 glass-panel rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 border border-slate-800">
               <div className="px-4 py-3 border-b border-slate-800/80 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-cyber-accent" />
@@ -184,42 +182,110 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* User Profile Menu */}
-        <div className="relative" ref={userRef}>
+        {/* Three-Dots System Options & Settings Menu */}
+        <div className="relative" ref={threeDotsRef}>
           <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-rose-100/60 dark:hover:bg-slate-800 night:hover:bg-slate-800 transition-colors"
+            onClick={() => setShowThreeDotsMenu(!showThreeDotsMenu)}
+            className="p-2.5 rounded-xl text-slate-700 dark:text-slate-300 night:text-slate-300 hover:bg-rose-100/60 dark:hover:bg-slate-800 night:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 transition-colors flex items-center gap-1.5"
+            title="System Options & Settings"
           >
             {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-lg object-cover border border-cyber-accent/40" />
+              <img src={user.avatarUrl} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-cyber-accent/20 text-cyber-accent flex items-center justify-center font-bold text-xs">
-                {user?.name.charAt(0) || 'U'}
-              </div>
+              <UserIcon className="w-4 h-4 text-cyber-accent" />
             )}
-            <div className="text-left hidden xl:block">
-              <p className="text-xs font-semibold text-slate-900 dark:text-white night:text-white leading-tight">{user?.name}</p>
-              <p className="text-[10px] text-cyber-accent font-mono">{user?.role}</p>
-            </div>
+            <MoreVertical className="w-4 h-4" />
           </button>
 
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-56 glass-panel rounded-2xl shadow-2xl py-2 z-50 text-xs animate-in fade-in duration-150">
-              <div className="px-4 py-2 border-b border-slate-800/80">
-                <p className="font-semibold text-slate-900 dark:text-white night:text-white">{user?.name}</p>
-                <p className="text-slate-500 dark:text-slate-400 text-[11px] truncate">{user?.email}</p>
-                <span className="mt-1 inline-block px-2 py-0.5 rounded bg-cyber-accent/15 text-cyber-accent font-mono text-[10px]">
-                  {user?.department}
-                </span>
+          {showThreeDotsMenu && (
+            <div className="absolute right-0 mt-2 w-64 glass-panel rounded-2xl shadow-2xl py-3 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 border border-slate-800 space-y-3">
+              {/* User Info Section */}
+              <div className="px-4 pb-3 border-b border-slate-800/80 flex items-center gap-3">
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.name} className="w-9 h-9 rounded-xl object-cover border border-cyber-accent/40" />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl bg-cyber-accent/20 text-cyber-accent flex items-center justify-center font-bold text-sm">
+                    {user?.name?.charAt(0) || 'U'}
+                  </div>
+                )}
+                <div className="overflow-hidden">
+                  <p className="font-bold text-slate-900 dark:text-white night:text-white truncate">{user?.name || 'Officer'}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
+                  <span className="mt-0.5 inline-block px-2 py-0.2 rounded bg-cyber-accent/15 text-cyber-accent font-mono text-[9px] font-bold">
+                    {user?.role || 'I4C_OFFICER'}
+                  </span>
+                </div>
               </div>
 
-              <div className="py-1">
+              {/* Theme Shades Selector */}
+              <div className="px-3 space-y-1.5">
+                <p className="px-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Theme Shades
+                </p>
+                <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-slate-200/60 dark:bg-slate-800/60 night:bg-slate-900 border border-slate-300 dark:border-slate-800">
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg font-semibold text-[10px] transition-all ${
+                      theme === 'light'
+                        ? 'bg-white text-pink-600 shadow-sm font-bold border border-pink-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    }`}
+                    title="Soft Light Pink Mode"
+                  >
+                    <Sun className="w-3 h-3 text-pink-500" />
+                    <span>Light</span>
+                  </button>
+
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg font-semibold text-[10px] transition-all ${
+                      theme === 'dark'
+                        ? 'bg-cyber-800 text-cyber-accent shadow-sm font-bold border border-cyber-accent/40'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-white'
+                    }`}
+                    title="Cyber Midnight Navy Dark Mode"
+                  >
+                    <Moon className="w-3 h-3 text-cyber-accent" />
+                    <span>Dark</span>
+                  </button>
+
+                  <button
+                    onClick={() => setTheme('night')}
+                    className={`flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg font-semibold text-[10px] transition-all ${
+                      theme === 'night'
+                        ? 'bg-slate-900 text-amber-400 shadow-sm font-bold border border-amber-500/40'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-white'
+                    }`}
+                    title="Pitch OLED Warm Eye-Care Amber Mode"
+                  >
+                    <Eye className="w-3 h-3 text-amber-400" />
+                    <span>Night</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div className="px-2 pt-1 border-t border-slate-800/80 space-y-0.5">
                 <button
                   onClick={() => {
-                    setShowUserMenu(false);
+                    setShowThreeDotsMenu(false);
+                    navigate('/settings');
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-rose-100/60 dark:hover:bg-slate-800 night:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 font-medium transition-colors"
+                >
+                  <Settings className="w-4 h-4 text-cyber-accent" />
+                  <span>System Settings</span>
+                </button>
+              </div>
+
+              {/* Auth Actions */}
+              <div className="px-2 pt-1 border-t border-slate-800/80">
+                <button
+                  onClick={() => {
+                    setShowThreeDotsMenu(false);
                     onLogout();
                   }}
-                  className="w-full text-left px-4 py-2 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 font-medium transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-rose-500/15 text-rose-500 flex items-center gap-2.5 font-semibold transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
