@@ -93,20 +93,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Center Trigger (Hidden on Mobile) */}
-      <div className="hidden lg:flex items-center gap-3">
+      {/* Right Controls */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Live Alert Trigger */}
         <button
           onClick={handleManualDemoTrigger}
           disabled={demoTriggered}
-          className="px-3.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/30 hover:bg-rose-500/25 transition-all text-xs font-semibold"
+          className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/30 hover:bg-rose-500/25 transition-all text-xs font-semibold shrink-0"
           title="Trigger live ML fraud prediction alert"
         >
           <span>{demoTriggered ? 'Alert Pushed' : 'Live Alert'}</span>
         </button>
-      </div>
 
-      {/* Right Controls */}
-      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Notification Bell Dropdown */}
         {/* Notification Bell Dropdown */}
         <div className="relative" ref={notifRef}>
           <button 
