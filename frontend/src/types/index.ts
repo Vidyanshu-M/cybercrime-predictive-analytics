@@ -188,3 +188,68 @@ export interface MLModelMetrics {
   datasetSize: string;
   featureImportance: { feature: string; importance: number; group: 'Temporal' | 'Spatial' | 'Financial' }[];
 }
+
+export type BaseMapTile = 'dark' | 'tactical' | 'satellite' | 'light';
+
+export interface MapLayerVisibility {
+  atms: boolean;
+  complaints: boolean;
+  withdrawals: boolean;
+  predictions: boolean;
+  heatmap: boolean;
+  riskZones: boolean;
+}
+
+export type TimeWindowPreset = '1h' | '6h' | '24h' | '7d' | 'all';
+
+export interface TimeWindowFilterState {
+  preset: TimeWindowPreset;
+  selectedHour?: number; // 0 - 23 for hourly simulation scrubber
+  predictionHorizonHours: number; // 1, 3, 6, 12 hours
+  isSimulating: boolean;
+  simulationSpeed: number; // 1x, 2x, 5x
+}
+
+export interface HeatmapConfig {
+  radius: number;
+  blur: number;
+  opacity: number;
+  minOpacity: number;
+  weightByAmount: boolean;
+}
+
+export interface GISRiskDistribution {
+  category: string;
+  count: number;
+  percentage: number;
+  color: string;
+}
+
+export interface GISTemporalPattern {
+  hour: string;
+  hourNumber: number;
+  complaintCount: number;
+  withdrawalSpikeCount: number;
+  avgRiskScore: number;
+  predictedThreatProbability: number;
+  fraudVolumeInLakhs: number;
+}
+
+export interface GISBankExposure {
+  bankName: string;
+  atmCount: number;
+  compromisedCount: number;
+  fraudAmountLakhs: number;
+  riskIndex: number;
+}
+
+export interface GISAnalyticsData {
+  riskDistribution: GISRiskDistribution[];
+  temporalPatterns: GISTemporalPattern[];
+  bankExposures: GISBankExposure[];
+  proximityBreakdown: {
+    within1Km: number;
+    within3Km: number;
+    within5Km: number;
+  };
+}

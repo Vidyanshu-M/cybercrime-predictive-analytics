@@ -417,3 +417,39 @@ html.light .leaflet-container a.leaflet-popup-close-button:hover { color: #DB277
   border-radius: 50%;
 }
 
+/* ---------------- GIS POLYGON & CLUSTER STYLING ---------------- */
+@keyframes polygonPulse {
+  0% {
+    stroke-opacity: 0.8;
+    fill-opacity: 0.16;
+  }
+  50% {
+    stroke-opacity: 1;
+    fill-opacity: 0.32;
+  }
+  100% {
+    stroke-opacity: 0.8;
+    fill-opacity: 0.16;
+  }
+}
+
+.risk-pulse-polygon {
+  animation: polygonPulse 2.5s infinite ease-in-out;
+}
+
+.custom-zone-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.leaflet-tooltip-pane .custom-zone-tooltip::before {
+  display: none !important;
+}
+
+.custom-cluster-marker:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+

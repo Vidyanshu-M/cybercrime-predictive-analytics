@@ -8,7 +8,8 @@ import {
   Alert, 
   Case, 
   DashboardSummary,
-  MLModelMetrics
+  MLModelMetrics,
+  GISAnalyticsData
 } from '../types';
 
 export const MOCK_USERS: User[] = [
@@ -151,6 +152,138 @@ export const MOCK_ATMS: ATM[] = [
     atmType: 'OFFSITE',
     isActive: true,
     historicalHotspotScore: 79
+  },
+  {
+    id: 'ATM-109',
+    atmCode: 'ATM8102',
+    bankId: 'BANK-ICICI',
+    bankName: 'ICICI Bank',
+    location: { lat: 28.6520, lng: 77.1900 },
+    district: 'Central Delhi',
+    area: 'Karol Bagh Arya Samaj Road',
+    atmType: 'ONSITE',
+    isActive: true,
+    historicalHotspotScore: 86
+  },
+  {
+    id: 'ATM-110',
+    atmCode: 'ATM8103',
+    bankId: 'BANK-SBI',
+    bankName: 'State Bank of India',
+    location: { lat: 28.5494, lng: 77.2001 },
+    district: 'South Delhi',
+    area: 'Hauz Khas Village Market Gate',
+    atmType: 'OFFSITE',
+    isActive: true,
+    historicalHotspotScore: 74
+  },
+  {
+    id: 'ATM-111',
+    atmCode: 'ATM8104',
+    bankId: 'BANK-AXIS',
+    bankName: 'Axis Bank',
+    location: { lat: 28.5480, lng: 77.2510 },
+    district: 'South Delhi',
+    area: 'Nehru Place Electronics Market Tower B',
+    atmType: 'OFFSITE',
+    isActive: true,
+    historicalHotspotScore: 90
+  },
+  {
+    id: 'ATM-112',
+    atmCode: 'ATM8105',
+    bankId: 'BANK-PNB',
+    bankName: 'Punjab National Bank',
+    location: { lat: 28.6562, lng: 77.2300 },
+    district: 'North Delhi',
+    area: 'Chandni Chowk Main Fountain',
+    atmType: 'ONSITE',
+    isActive: true,
+    historicalHotspotScore: 81
+  },
+  {
+    id: 'ATM-113',
+    atmCode: 'ATM8106',
+    bankId: 'BANK-HDFC',
+    bankName: 'HDFC Bank',
+    location: { lat: 28.5670, lng: 77.2430 },
+    district: 'South Delhi',
+    area: 'Lajpat Nagar Central Market',
+    atmType: 'ONSITE',
+    isActive: true,
+    historicalHotspotScore: 68
+  },
+  {
+    id: 'ATM-114',
+    atmCode: 'ATM8107',
+    bankId: 'BANK-SBI',
+    bankName: 'State Bank of India',
+    location: { lat: 28.4980, lng: 77.0890 },
+    district: 'Gurugram',
+    area: 'MG Road Metro Station Footover',
+    atmType: 'OFFSITE',
+    isActive: true,
+    historicalHotspotScore: 87
+  },
+  {
+    id: 'ATM-115',
+    atmCode: 'ATM8108',
+    bankId: 'BANK-ICICI',
+    bankName: 'ICICI Bank',
+    location: { lat: 28.4720, lng: 77.0980 },
+    district: 'Gurugram',
+    area: 'Golf Course Road Sector 54',
+    atmType: 'DRIVE_THRU',
+    isActive: true,
+    historicalHotspotScore: 71
+  },
+  {
+    id: 'ATM-116',
+    atmCode: 'ATM8109',
+    bankId: 'BANK-HDFC',
+    bankName: 'HDFC Bank',
+    location: { lat: 28.6270, lng: 77.3730 },
+    district: 'Noida',
+    area: 'Sector 62 Electronic City Commercial Hub',
+    atmType: 'OFFSITE',
+    isActive: true,
+    historicalHotspotScore: 83
+  },
+  {
+    id: 'ATM-117',
+    atmCode: 'ATM8110',
+    bankId: 'BANK-BOB',
+    bankName: 'Bank of Baroda',
+    location: { lat: 28.6300, lng: 77.2800 },
+    district: 'East Delhi',
+    area: 'Laxmi Nagar Metro Pillar 38',
+    atmType: 'ONSITE',
+    isActive: true,
+    historicalHotspotScore: 78
+  },
+  {
+    id: 'ATM-118',
+    atmCode: 'ATM8111',
+    bankId: 'BANK-SBI',
+    bankName: 'State Bank of India',
+    location: { lat: 28.5800, lng: 77.0500 },
+    district: 'South West Delhi',
+    area: 'Dwarka Sector 12 City Centre',
+    atmType: 'ONSITE',
+    isActive: true,
+    historicalHotspotScore: 65
+  },
+  {
+    id: 'ATM-119',
+    atmCode: 'ATM8112',
+    bankId: 'BANK-AXIS',
+    bankName: 'Axis Bank',
+    location: { lat: 19.1136, lng: 72.8697 },
+    district: 'Mumbai West',
+    area: 'Andheri East MIDC Corporate Hub',
+    atmType: 'OFFSITE',
+    isActive: true,
+    historicalHotspotScore: 85
   }
 ];
 
@@ -219,6 +352,97 @@ export const MOCK_COMPLAINTS: Complaint[] = [
     location: { lat: 19.0601, lng: 72.8299 },
     status: 'PENDING',
     createdAt: '2026-09-16T22:45:00Z'
+  },
+  {
+    id: 'CMP-2026-8806',
+    complaintNumber: 'NCRP-2026-99417',
+    reportedAt: '2026-09-17T02:15:00Z',
+    crimeCategory: 'ATM_WITHDRAWAL_FRAUD',
+    fraudAmount: 70000,
+    state: 'Delhi NCR',
+    district: 'Central Delhi',
+    policeStation: 'Karol Bagh PS',
+    location: { lat: 28.6522, lng: 77.1905 },
+    status: 'INVESTIGATING',
+    createdAt: '2026-09-17T02:25:00Z'
+  },
+  {
+    id: 'CMP-2026-8807',
+    complaintNumber: 'NCRP-2026-99418',
+    reportedAt: '2026-09-17T01:45:00Z',
+    crimeCategory: 'MONEY_MULE',
+    fraudAmount: 180000,
+    state: 'Delhi NCR',
+    district: 'South Delhi',
+    policeStation: 'Kalkaji PS (Nehru Place)',
+    location: { lat: 28.5482, lng: 77.2515 },
+    status: 'INVESTIGATING',
+    createdAt: '2026-09-17T02:00:00Z'
+  },
+  {
+    id: 'CMP-2026-8808',
+    complaintNumber: 'NCRP-2026-99419',
+    reportedAt: '2026-09-17T07:30:00Z',
+    crimeCategory: 'PHISHING_LINK',
+    fraudAmount: 62000,
+    state: 'Haryana',
+    district: 'Gurugram',
+    policeStation: 'DLF Phase 2 PS',
+    location: { lat: 28.4601, lng: 77.0272 },
+    status: 'PENDING',
+    createdAt: '2026-09-17T07:45:00Z'
+  },
+  {
+    id: 'CMP-2026-8809',
+    complaintNumber: 'NCRP-2026-99420',
+    reportedAt: '2026-09-17T08:10:00Z',
+    crimeCategory: 'VISHING_CALL',
+    fraudAmount: 95000,
+    state: 'Uttar Pradesh',
+    district: 'Noida',
+    policeStation: 'Sector 58 PS (Sector 62)',
+    location: { lat: 28.6275, lng: 77.3735 },
+    status: 'INVESTIGATING',
+    createdAt: '2026-09-17T08:25:00Z'
+  },
+  {
+    id: 'CMP-2026-8810',
+    complaintNumber: 'NCRP-2026-99421',
+    reportedAt: '2026-09-16T23:40:00Z',
+    crimeCategory: 'ATM_WITHDRAWAL_FRAUD',
+    fraudAmount: 50000,
+    state: 'Delhi NCR',
+    district: 'New Delhi',
+    policeStation: 'Parliament Street PS',
+    location: { lat: 28.6255, lng: 77.2105 },
+    status: 'INVESTIGATING',
+    createdAt: '2026-09-16T23:55:00Z'
+  },
+  {
+    id: 'CMP-2026-8811',
+    complaintNumber: 'NCRP-2026-99422',
+    reportedAt: '2026-09-17T09:15:00Z',
+    crimeCategory: 'IDENTITY_THEFT',
+    fraudAmount: 110000,
+    state: 'Delhi NCR',
+    district: 'North Delhi',
+    policeStation: 'Kotwali PS (Chandni Chowk)',
+    location: { lat: 28.6565, lng: 77.2305 },
+    status: 'PENDING',
+    createdAt: '2026-09-17T09:30:00Z'
+  },
+  {
+    id: 'CMP-2026-8812',
+    complaintNumber: 'NCRP-2026-99423',
+    reportedAt: '2026-09-17T00:30:00Z',
+    crimeCategory: 'ATM_WITHDRAWAL_FRAUD',
+    fraudAmount: 80000,
+    state: 'Maharashtra',
+    district: 'Mumbai West',
+    policeStation: 'MIDC Andheri PS',
+    location: { lat: 19.1140, lng: 72.8702 },
+    status: 'INVESTIGATING',
+    createdAt: '2026-09-17T00:45:00Z'
   }
 ];
 
@@ -258,6 +482,149 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
     location: { lat: 28.4595, lng: 77.0266 },
     riskLabel: 1,
     complaintId: 'CMP-2026-8802'
+  },
+  {
+    id: 'TXN-901224',
+    transactionReference: 'TXN-HDFC-991205',
+    transactionTime: '2026-09-17T05:38:00Z',
+    amount: 40000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-90211',
+    atmId: 'ATM-102',
+    location: { lat: 28.4595, lng: 77.0266 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8802'
+  },
+  {
+    id: 'TXN-901225',
+    transactionReference: 'TXN-ICICI-774011',
+    transactionTime: '2026-09-17T02:08:00Z',
+    amount: 45000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-66321',
+    atmId: 'ATM-109',
+    location: { lat: 28.6520, lng: 77.1900 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8806'
+  },
+  {
+    id: 'TXN-901226',
+    transactionReference: 'TXN-ICICI-774012',
+    transactionTime: '2026-09-17T02:11:00Z',
+    amount: 25000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-66321',
+    atmId: 'ATM-109',
+    location: { lat: 28.6520, lng: 77.1900 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8806'
+  },
+  {
+    id: 'TXN-901227',
+    transactionReference: 'TXN-AXIS-552019',
+    transactionTime: '2026-09-17T01:40:00Z',
+    amount: 50000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-MULE-4412',
+    atmId: 'ATM-111',
+    location: { lat: 28.5480, lng: 77.2510 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8807'
+  },
+  {
+    id: 'TXN-901228',
+    transactionReference: 'TXN-AXIS-552020',
+    transactionTime: '2026-09-17T01:43:00Z',
+    amount: 50000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-MULE-4412',
+    atmId: 'ATM-111',
+    location: { lat: 28.5480, lng: 77.2510 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8807'
+  },
+  {
+    id: 'TXN-901229',
+    transactionReference: 'TXN-AXIS-552021',
+    transactionTime: '2026-09-17T01:46:00Z',
+    amount: 50000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-MULE-4412',
+    atmId: 'ATM-111',
+    location: { lat: 28.5480, lng: 77.2510 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8807'
+  },
+  {
+    id: 'TXN-901230',
+    transactionReference: 'TXN-SBI-223190',
+    transactionTime: '2026-09-17T04:02:00Z',
+    amount: 30000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-1994',
+    atmId: 'ATM-103',
+    location: { lat: 28.5700, lng: 77.3200 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8803'
+  },
+  {
+    id: 'TXN-901231',
+    transactionReference: 'TXN-PNB-114920',
+    transactionTime: '2026-09-17T02:50:00Z',
+    amount: 40000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-7718',
+    atmId: 'ATM-104',
+    location: { lat: 28.6500, lng: 77.1500 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8804'
+  },
+  {
+    id: 'TXN-901232',
+    transactionReference: 'TXN-PNB-114921',
+    transactionTime: '2026-09-17T02:54:00Z',
+    amount: 50000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-7718',
+    atmId: 'ATM-104',
+    location: { lat: 28.6500, lng: 77.1500 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8804'
+  },
+  {
+    id: 'TXN-901233',
+    transactionReference: 'TXN-SBI-991204',
+    transactionTime: '2026-09-17T03:15:00Z',
+    amount: 35000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-3341',
+    atmId: 'ATM-114',
+    location: { lat: 28.4980, lng: 77.0890 },
+    riskLabel: 1
+  },
+  {
+    id: 'TXN-901234',
+    transactionReference: 'TXN-HDFC-882194',
+    transactionTime: '2026-09-17T00:20:00Z',
+    amount: 40000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-8841',
+    atmId: 'ATM-119',
+    location: { lat: 19.1136, lng: 72.8697 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8812'
+  },
+  {
+    id: 'TXN-901235',
+    transactionReference: 'TXN-HDFC-882195',
+    transactionTime: '2026-09-17T00:24:00Z',
+    amount: 40000,
+    transactionType: 'ATM_WITHDRAWAL',
+    accountId: 'ACC-REF-8841',
+    atmId: 'ATM-119',
+    location: { lat: 19.1136, lng: 72.8697 },
+    riskLabel: 1,
+    complaintId: 'CMP-2026-8812'
   }
 ];
 
@@ -354,7 +721,14 @@ export const MOCK_RISK_ZONES: RiskZone[] = [
     complaintCount: 14,
     atmCount: 6,
     predictionWindowStart: '2026-09-17T07:00:00Z',
-    predictionWindowEnd: '2026-09-17T10:00:00Z'
+    predictionWindowEnd: '2026-09-17T10:00:00Z',
+    coordinates: [
+      [28.6370, 77.2110],
+      [28.6380, 77.2225],
+      [28.6290, 77.2250],
+      [28.6240, 77.2150],
+      [28.6280, 77.2080]
+    ]
   },
   {
     id: 'ZONE-GURUGRAM-CYBER',
@@ -366,7 +740,14 @@ export const MOCK_RISK_ZONES: RiskZone[] = [
     complaintCount: 19,
     atmCount: 9,
     predictionWindowStart: '2026-09-17T07:00:00Z',
-    predictionWindowEnd: '2026-09-17T10:00:00Z'
+    predictionWindowEnd: '2026-09-17T10:00:00Z',
+    coordinates: [
+      [28.4680, 77.0200],
+      [28.4720, 77.0340],
+      [28.4580, 77.0390],
+      [28.4500, 77.0280],
+      [28.4540, 77.0180]
+    ]
   },
   {
     id: 'ZONE-NOIDA-SEC18',
@@ -378,7 +759,31 @@ export const MOCK_RISK_ZONES: RiskZone[] = [
     complaintCount: 8,
     atmCount: 5,
     predictionWindowStart: '2026-09-17T07:00:00Z',
-    predictionWindowEnd: '2026-09-17T10:00:00Z'
+    predictionWindowEnd: '2026-09-17T10:00:00Z',
+    coordinates: [
+      [28.5770, 77.3120],
+      [28.5780, 77.3280],
+      [28.5640, 77.3290],
+      [28.5630, 77.3140]
+    ]
+  },
+  {
+    id: 'ZONE-DELHI-KAROLBAGH',
+    name: 'Karol Bagh - West Delhi Mule Corridor',
+    center: { lat: 28.6510, lng: 77.1700 },
+    radiusKm: 1.8,
+    riskScore: 78,
+    riskLevel: 'HIGH',
+    complaintCount: 12,
+    atmCount: 7,
+    predictionWindowStart: '2026-09-17T07:00:00Z',
+    predictionWindowEnd: '2026-09-17T10:00:00Z',
+    coordinates: [
+      [28.6580, 77.1450],
+      [28.6600, 77.1950],
+      [28.6440, 77.1920],
+      [28.6420, 77.1480]
+    ]
   },
   {
     id: 'ZONE-MUMBAI-BANDRA',
@@ -390,7 +795,13 @@ export const MOCK_RISK_ZONES: RiskZone[] = [
     complaintCount: 11,
     atmCount: 7,
     predictionWindowStart: '2026-09-17T07:00:00Z',
-    predictionWindowEnd: '2026-09-17T10:00:00Z'
+    predictionWindowEnd: '2026-09-17T10:00:00Z',
+    coordinates: [
+      [19.0680, 72.8200],
+      [19.0700, 72.8390],
+      [19.0520, 72.8410],
+      [19.0490, 72.8220]
+    ]
   }
 ];
 
@@ -573,4 +984,52 @@ export const MOCK_ML_METRICS: MLModelMetrics = {
     { feature: 'hour_of_day_peak', importance: 0.08, group: 'Temporal' },
     { feature: 'unique_accounts_1h', importance: 0.04, group: 'Financial' },
   ]
+};
+
+export const MOCK_GIS_ANALYTICS: GISAnalyticsData = {
+  riskDistribution: [
+    { category: 'CRITICAL', count: 18, percentage: 32, color: '#EF4444' },
+    { category: 'HIGH', count: 24, percentage: 42, color: '#F97316' },
+    { category: 'MEDIUM', count: 11, percentage: 19, color: '#F59E0B' },
+    { category: 'LOW', count: 4, percentage: 7, color: '#10B981' }
+  ],
+  temporalPatterns: [
+    { hour: '00:00', hourNumber: 0, complaintCount: 4, withdrawalSpikeCount: 12, avgRiskScore: 78, predictedThreatProbability: 0.81, fraudVolumeInLakhs: 24.5 },
+    { hour: '01:00', hourNumber: 1, complaintCount: 2, withdrawalSpikeCount: 16, avgRiskScore: 84, predictedThreatProbability: 0.88, fraudVolumeInLakhs: 38.0 },
+    { hour: '02:00', hourNumber: 2, complaintCount: 3, withdrawalSpikeCount: 22, avgRiskScore: 92, predictedThreatProbability: 0.94, fraudVolumeInLakhs: 52.4 },
+    { hour: '03:00', hourNumber: 3, complaintCount: 5, withdrawalSpikeCount: 19, avgRiskScore: 89, predictedThreatProbability: 0.91, fraudVolumeInLakhs: 44.8 },
+    { hour: '04:00', hourNumber: 4, complaintCount: 4, withdrawalSpikeCount: 10, avgRiskScore: 75, predictedThreatProbability: 0.77, fraudVolumeInLakhs: 21.0 },
+    { hour: '05:00', hourNumber: 5, complaintCount: 6, withdrawalSpikeCount: 6, avgRiskScore: 68, predictedThreatProbability: 0.69, fraudVolumeInLakhs: 14.2 },
+    { hour: '06:00', hourNumber: 6, complaintCount: 14, withdrawalSpikeCount: 8, avgRiskScore: 72, predictedThreatProbability: 0.74, fraudVolumeInLakhs: 18.6 },
+    { hour: '07:00', hourNumber: 7, complaintCount: 22, withdrawalSpikeCount: 11, avgRiskScore: 81, predictedThreatProbability: 0.84, fraudVolumeInLakhs: 28.5 },
+    { hour: '08:00', hourNumber: 8, complaintCount: 31, withdrawalSpikeCount: 14, avgRiskScore: 85, predictedThreatProbability: 0.87, fraudVolumeInLakhs: 34.2 },
+    { hour: '09:00', hourNumber: 9, complaintCount: 38, withdrawalSpikeCount: 15, avgRiskScore: 88, predictedThreatProbability: 0.89, fraudVolumeInLakhs: 39.0 },
+    { hour: '10:00', hourNumber: 10, complaintCount: 42, withdrawalSpikeCount: 13, avgRiskScore: 82, predictedThreatProbability: 0.83, fraudVolumeInLakhs: 32.5 },
+    { hour: '11:00', hourNumber: 11, complaintCount: 36, withdrawalSpikeCount: 9, avgRiskScore: 74, predictedThreatProbability: 0.75, fraudVolumeInLakhs: 22.0 },
+    { hour: '12:00', hourNumber: 12, complaintCount: 29, withdrawalSpikeCount: 8, avgRiskScore: 69, predictedThreatProbability: 0.70, fraudVolumeInLakhs: 19.4 },
+    { hour: '13:00', hourNumber: 13, complaintCount: 25, withdrawalSpikeCount: 7, avgRiskScore: 65, predictedThreatProbability: 0.66, fraudVolumeInLakhs: 16.0 },
+    { hour: '14:00', hourNumber: 14, complaintCount: 27, withdrawalSpikeCount: 8, avgRiskScore: 67, predictedThreatProbability: 0.68, fraudVolumeInLakhs: 17.5 },
+    { hour: '15:00', hourNumber: 15, complaintCount: 32, withdrawalSpikeCount: 10, avgRiskScore: 71, predictedThreatProbability: 0.73, fraudVolumeInLakhs: 23.2 },
+    { hour: '16:00', hourNumber: 16, complaintCount: 35, withdrawalSpikeCount: 11, avgRiskScore: 76, predictedThreatProbability: 0.78, fraudVolumeInLakhs: 26.8 },
+    { hour: '17:00', hourNumber: 17, complaintCount: 30, withdrawalSpikeCount: 12, avgRiskScore: 79, predictedThreatProbability: 0.80, fraudVolumeInLakhs: 29.0 },
+    { hour: '18:00', hourNumber: 18, complaintCount: 26, withdrawalSpikeCount: 14, avgRiskScore: 82, predictedThreatProbability: 0.83, fraudVolumeInLakhs: 33.5 },
+    { hour: '19:00', hourNumber: 19, complaintCount: 21, withdrawalSpikeCount: 17, avgRiskScore: 86, predictedThreatProbability: 0.87, fraudVolumeInLakhs: 41.2 },
+    { hour: '20:00', hourNumber: 20, complaintCount: 18, withdrawalSpikeCount: 19, avgRiskScore: 88, predictedThreatProbability: 0.89, fraudVolumeInLakhs: 46.0 },
+    { hour: '21:00', hourNumber: 21, complaintCount: 15, withdrawalSpikeCount: 21, avgRiskScore: 91, predictedThreatProbability: 0.92, fraudVolumeInLakhs: 49.8 },
+    { hour: '22:00', hourNumber: 22, complaintCount: 11, withdrawalSpikeCount: 23, avgRiskScore: 93, predictedThreatProbability: 0.95, fraudVolumeInLakhs: 55.4 },
+    { hour: '23:00', hourNumber: 23, complaintCount: 8, withdrawalSpikeCount: 18, avgRiskScore: 87, predictedThreatProbability: 0.88, fraudVolumeInLakhs: 42.1 }
+  ],
+  bankExposures: [
+    { bankName: 'State Bank of India', atmCount: 28, compromisedCount: 11, fraudAmountLakhs: 184.5, riskIndex: 88 },
+    { bankName: 'HDFC Bank', atmCount: 22, compromisedCount: 9, fraudAmountLakhs: 142.0, riskIndex: 84 },
+    { bankName: 'ICICI Bank', atmCount: 18, compromisedCount: 6, fraudAmountLakhs: 98.2, riskIndex: 72 },
+    { bankName: 'Axis Bank', atmCount: 15, compromisedCount: 4, fraudAmountLakhs: 65.8, riskIndex: 61 },
+    { bankName: 'Punjab National Bank', atmCount: 14, compromisedCount: 5, fraudAmountLakhs: 79.4, riskIndex: 69 },
+    { bankName: 'Bank of Baroda', atmCount: 9, compromisedCount: 3, fraudAmountLakhs: 48.0, riskIndex: 58 }
+  ],
+  proximityBreakdown: {
+    within1Km: 58,
+    within3Km: 124,
+    within5Km: 196
+  }
 };
