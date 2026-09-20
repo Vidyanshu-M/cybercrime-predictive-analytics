@@ -1,0 +1,223 @@
+### CyberTrace Backend API Test Suite
+### Complete Handoff for Frontend Developers and QA
+### Swagger UI URL: http://localhost:8080/swagger-ui/index.html
+### OpenAPI JSON URL: http://localhost:8080/v3/api-docs
+
+@baseUrl = http://localhost:8080
+
+### 0.1 Swagger UI Healthcheck
+GET {{baseUrl}}/swagger-ui/index.html
+
+### 0.2 OpenAPI 3 Specification JSON
+GET {{baseUrl}}/v3/api-docs
+
+###############################################################################
+# 1. AUTHENTICATION & TOKEN ACQUISITION
+###############################################################################
+
+### 1.1 Admin Login (Role: ROLE_ADMIN)
+# @name adminLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@cybertrace.gov.in",
+    "password": "password123"
+}
+
+### Store Admin Token
+@authToken = {{adminLogin.response.body.token}}
+
+
+### 1.2 Officer Login (Role: ROLE_I4C_OFFICER)
+# @name officerLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "officer@cybertrace.gov.in",
+    "password": "password123"
+}
+
+### Store Officer Token
+@officerToken = {{officerLogin.response.body.token}}
+
+
+###############################################################################
+# 2. DASHBOARD & HIGH-LEVEL METRICS
+###############################################################################
+
+### 2.1 Get Live Summary (KPI counts, dynamic fraud amount, recent alerts)
+GET {{baseUrl}}/api/dashboard/summary
+Authorization: Bearer {{authToken}}
+
+
+###############################################################################
+# 3. COMPLAINTS (NCRP INGESTION & QUERY)
+###############################################################################
+
+### 3.1 List Complaints (Paged)
+GET {{baseUrl}}/api/complaints?page=0&size=10
+Authorization: Bearer {{authToken}}
+
+### 3.2 Filter Complaints by District and Status
+GET {{baseUrl}}/api/complaints?district=New Delhi&status=NEW
+Authorization: Bearer {{authToken}}
+
+### 3.3 Create / Ingest New Complaint
+POST {{baseUrl}}/api/complaints
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "complaintNumber": "NCRP-2026-LIVE-001",
+    "crimeCategory": "ATM Skimming & Clone",
+    "fraudAmount": 55000.00,
+    "state": "Delhi",
+    "district": "New Delhi",
+    "policeStation": "Connaught Place PS",
+    "longitude": 77.2167,
+    "latitude": 28.6289
+}
+
+
+###############################################################################
+# 4. TRANSACTIONS & FRAUD PATTERNS
+###############################################################################
+
+### 4.1 Query Transactions (Filtered by FRAUD)
+GET {{baseUrl}}/api/transactions?riskLabel=FRAUD&page=0&size=15
+Authorization: Bearer {{authToken}}
+
+### 4.2 Query All Recent Withdrawals
+GET {{baseUrl}}/api/transactions?transactionType=WITHDRAWAL
+Authorization: Bearer {{authToken}}
+
+
+###############################################################################
+# 5. PREDICTIVE ML ENGINE
+###############################################################################
+
+### 5.1 Run Prediction Cycle for ATM (Calls FastAPI ML Service / Fallback Engine)
+POST {{baseUrl}}/api/predictions/run
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "atmId": "ATM1023",
+    "predictionWindowMinutes": 180
+}
+
+### 5.2 Get Recent Predictions
+GET {{baseUrl}}/api/predictions?page=0&size=10
+Authorization: Bearer {{authToken}}
+
+
+###############################################################################
+# 6. ALERTS & REAL-TIME INCIDENT WORKFLOW
+###############################################################################
+
+### 6.1 Get Active Alerts
+GET {{baseUrl}}/api/alerts?status=NEW
+Authorization: Bearer {{authToken}}
+
+### 6.2 Acknowledge an Alert (Replace with valid alert ID)
+PATCH {{baseUrl}}/api/alerts/30000000-0000-0000-0000-000000000001/acknowledge
+Authorization: Bearer {{authToken}}
+
+### 6.3 Assign Alert to Officer
+PATCH {{baseUrl}}/api/alerts/30000000-0000-0000-0000-000000000001/assign
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "officerId": "b0000000-0000-0000-0000-000000000002"
+}
+
+
+###############################################################################
+# 7. CASE MANAGEMENT & DIGITAL FORENSICS EVIDENCE
+###############################################################################
+
+### 7.1 List All Cases
+GET {{baseUrl}}/api/cases?page=0&size=10
+Authorization: Bearer {{authToken}}
+
+### 7.2 Create New Investigation Case
+# @name createCase
+POST {{baseUrl}}/api/cases
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "caseNumber": "CASE-2026-DEL-LIVE-001",
+    "title": "Saket Mall Repeated Skimming Investigation",
+    "priority": "HIGH",
+    "assignedOfficerId": "b0000000-0000-0000-0000-000000000002",
+    "complaintIds": ["f0000000-0000-0000-0000-000000000001"],
+    "transactionIds": ["10000000-0000-0000-0000-000000000001"]
+}
+
+### 7.3 Get Case Details (Including Linked Complaints, Txns & Evidence)
+GET {{baseUrl}}/api/cases/40000000-0000-0000-0000-000000000001
+Authorization: Bearer {{authToken}}
+
+### 7.4 Update Case Status (e.g., OPEN -> IN_PROGRESS / RESOLVED / CLOSED)
+PATCH {{baseUrl}}/api/cases/40000000-0000-0000-0000-000000000001/status
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "status": "IN_PROGRESS"
+}
+
+### 7.5 Register Digital Evidence to Case
+POST {{baseUrl}}/api/cases/40000000-0000-0000-0000-000000000001/evidence
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "fileName": "cctv_suspect_cp_outer_cam3.mp4",
+    "fileType": "video/mp4",
+    "storageReference": "s3://cybertrace-vault/evidence/cctv_suspect_cp_outer_cam3.mp4",
+    "hash": "c2b649d2146f4eb273397973059dfbd0fc118bbec1d87a4192b0f49fa81f1854"
+}
+
+
+###############################################################################
+# 8. POSTGIS GIS MAPPING & ATM GEO-SEARCH
+###############################################################################
+
+### 8.1 List All ATMs
+GET {{baseUrl}}/api/atms
+Authorization: Bearer {{authToken}}
+
+### 8.2 Geo-Radius ATM Search (Within 5km radius of Connaught Place)
+GET {{baseUrl}}/api/atms?lon=77.2167&lat=28.6289&radiusMeters=5000&limit=50
+Authorization: Bearer {{authToken}}
+
+### 8.3 Get ATM by Code
+GET {{baseUrl}}/api/atms/ATM1023
+Authorization: Bearer {{authToken}}
+
+### 8.4 Get PostGIS Risk Zone Polygons (GeoJSON Format)
+GET {{baseUrl}}/api/map/risk-zones
+Authorization: Bearer {{authToken}}
+
+
+###############################################################################
+# 9. ADVANCED ANALYTICS & CHARTS
+###############################################################################
+
+### 9.1 Analytics Overview (Category counts, Risk distribution, District hotspots, ML metrics)
+GET {{baseUrl}}/api/analytics/overview
+Authorization: Bearer {{authToken}}
+
+
+###############################################################################
+# 10. AUDIT LOGS (SECURITY & AUDIT TRAIL)
+###############################################################################
+
+### 10.1 Get Officer Audit Trail (Accessible to Admins & I4C Officers)
+GET {{baseUrl}}/api/audit-logs?page=0&size=25
+Authorization: Bearer {{authToken}}

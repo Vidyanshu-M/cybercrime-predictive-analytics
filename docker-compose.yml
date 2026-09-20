@@ -1,0 +1,39 @@
+services:
+  cybertrace-db:
+    image: postgis/postgis:16-3.4
+    container_name: cybertrace-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cybercrime_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Vidya1@@
+    ports:
+      - "5432:5432"
+    volumes:
+      - cybertrace_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cybercrime_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cybertrace-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cybertrace-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://cybertrace-db:5432/cybercrime_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Vidya1@@
+      ML_SERVICE_URL: http://host.docker.internal:8000
+    depends_on:
+      cybertrace-db:
+        condition: service_healthy
+
+volumes:
+  cybertrace_pgdata:
+    driver: local
