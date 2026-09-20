@@ -110,15 +110,67 @@ powershell -ExecutionPolicy Bypass -File .\stop-all.ps1
 
 | Tier | URL | Purpose |
 | :--- | :--- | :--- |
-| **Officer Dashboard** | `http://localhost:3000` | Tactical command center, live prediction runner, GIS map. |
-| **Spring Boot Backend** | `http://localhost:8080/api` | REST API core. |
-| **Swagger UI** | `http://localhost:8080/swagger-ui.html` | Interactive API documentation. |
-| **FastAPI ML Docs** | `http://127.0.0.1:8000/docs` | OpenAPI documentation for `/predict` and `/health`. |
-| **Demo Runbook** | [docs/DEMO_RUNBOOK.md](docs/DEMO_RUNBOOK.md) | Click-by-click 3–5 min hackathon presentation script. |
+| **Officer Dashboard** | [http://localhost:3000](http://localhost:3000) | Tactical command center, live prediction runner, GIS map. |
+| **Spring Boot Backend** | [http://localhost:8080/api](http://localhost:8080/api) | REST API core. |
+| **Swagger UI** | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) | Interactive API documentation. |
+| **FastAPI ML Docs** | [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) | OpenAPI documentation for `/predict` and `/health`. |
+| **Frontend Docs** | [frontend/README.md](frontend/README.md) | React 18, Vite, Leaflet, and UI component documentation. |
+| **ML Service Docs** | [ml-service/README.md](ml-service/README.md) | XGBoost model, feature vectors, and API contract. |
+| **Demo Runbook** | [docs/DEMO_RUNBOOK.md](docs/DEMO_RUNBOOK.md) | Click-by-click 3–5 min presentation script. |
 
 ---
 
-## 7. Demo Scenarios
+## 7. Default Authentication Credentials
+
+Seed accounts pre-configured in the database:
+
+| Role | Email | Password | Department |
+| :--- | :--- | :--- | :--- |
+| **Admin Officer** | `admin@cybertrace.gov.in` | `password123` | Cyber Operations Command |
+| **I4C Rapid Response** | `officer@cybertrace.gov.in` | `password123` | I4C Rapid Response |
+| **Data Analyst** | `analyst@cybertrace.gov.in` | `password123` | Predictive Analytics Wing |
+
+---
+
+## 8. Manual Step-by-Step Startup
+
+If you prefer starting each service individually rather than using `start-all.ps1`:
+
+### Step 1: PostgreSQL 16 with PostGIS
+Ensure PostgreSQL is active on port `5432` with database `cybercrime_db`:
+```bash
+pg_ctl -D "path/to/data" start
+```
+
+### Step 2: FastAPI ML Service
+```bash
+cd ml-service
+# Activate virtual environment
+.\.venv\Scripts\activate  # On Windows
+# Run FastAPI server
+python -m uvicorn main:app --host 127.0.0.1 --port 8000
+```
+Verify: `http://127.0.0.1:8000/health`
+
+### Step 3: Spring Boot Backend
+```bash
+# In the repository root
+./mvnw spring-boot:run
+```
+Flyway automatically runs all database migrations (`V1` through `V6`).  
+Verify: `http://localhost:8080/api/atms`
+
+### Step 4: Vite React Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Verify: `http://localhost:3000`
+
+---
+
+## 9. Demo Scenarios
 
 See [docs/DEMO_RUNBOOK.md](docs/DEMO_RUNBOOK.md) for detailed presentation instructions:
 1. **Scenario A (Fraud Burst - ATM1023)**:
